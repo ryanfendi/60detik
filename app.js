@@ -1,1463 +1,1178 @@
-/* =========================================
-   60DETIK V0.3
-========================================= */
+/* =====================================================
+   60DETIK V0.4
+   SUPABASE + CREATOR + MARKETPLACE
+   ===================================================== */
 
+
+/* =====================================================
+   1. SUPABASE CONFIG
+   ===================================================== */
+
+const SUPABASE_URL = "https://crbobpsgaryhqcinfeow.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_35Owtv9UK_5i7MCeN2jnFQ_agbwLkkh";
+
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+/* =====================================================
+   2. GLOBAL STATE
+   ===================================================== */
+
+let currentUser = null;
 let products = [];
-
-let currentProduct = null;
-
-let selectedProduct = null;
+let authMode = "login";
 
 
-/* =========================================
-   START
-========================================= */
+/* =====================================================
+   3. START APP
+   ===================================================== */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+document.addEventListener("DOMContentLoaded", async () => {
 
-        loadProducts();
+  await checkUser();
 
-        renderProducts();
+  await loadMarketplace();
 
-        renderMarketplace();
+  updateUI();
 
-        updateStats();
-
-        loadProductFromUrl();
-
-    }
-);
+});
 
 
-/* =========================================
-   PAGE NAVIGATION
-========================================= */
+/* =====================================================
+   4. CHECK LOGIN
+   ===================================================== */
 
-function showPage(pageId) {
+async function checkUser() {
 
-    const pages =
-        document.querySelectorAll(".page");
+  const {
+    data,
+    error
+  } = await supabaseClient.auth.getUser();
 
+  if (error) {
 
-    pages.forEach(function (page) {
+    console.log(error);
 
-        page.classList.remove("active");
+    currentUser = null;
 
-    });
+    return;
+  }
 
-
-    const selected =
-        document.getElementById(pageId);
-
-
-    if (!selected) {
-        return;
-    }
+  currentUser = data.user || null;
+}
 
 
-    selected.classList.add("active");
+/* =====================================================
+   5. AUTH MODE
+   ===================================================== */
+
+function openAuth() {
+
+  authMode = "login";
+
+  updateAuthUI();
+
+  openPage("auth");
+}
 
 
-    updateNavigation(pageId);
+function toggleAuthMode() {
+
+  authMode =
+    authMode === "login"
+      ? "register"
+      : "login";
+
+  updateAuthUI();
+}
 
 
-    if (pageId === "marketplace") {
+function updateAuthUI() {
 
-        renderMarketplace();
+  const title =
+    document.getElementById("authTitle");
 
-    }
+  const subtitle =
+    document.getElementById("authSubtitle");
+
+  const name =
+    document.getElementById("authName");
+
+  const submit =
+    document.getElementById("authSubmit");
+
+  const toggle =
+    document.getElementById("authToggle");
 
 
-    if (pageId === "dashboard") {
+  if (authMode === "login") {
 
-        renderProducts();
+    title.textContent = "Masuk";
 
-        updateStats();
+    subtitle.textContent =
+      "Masuk ke akun Creator kamu.";
 
-    }
+    name.classList.add("hidden");
 
+    submit.textContent = "Masuk";
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+    toggle.textContent =
+      "Belum punya akun? Daftar";
+
+  } else {
+
+    title.textContent = "Daftar";
+
+    subtitle.textContent =
+      "Buat akun Creator 60DETIK.";
+
+    name.classList.remove("hidden");
+
+    submit.textContent = "Buat Akun";
+
+    toggle.textContent =
+      "Sudah punya akun? Masuk";
+  }
 
 }
 
 
-/* =========================================
-   NAVIGATION
-========================================= */
+/* =====================================================
+   6. LOGIN / REGISTER
+   ===================================================== */
 
-function updateNavigation(pageId) {
+async function submitAuth() {
 
-    const ids = [
-        "navHome",
-        "navCreate",
-        "navIdea",
-        "navMarketplace"
-    ];
+  const email =
+    document.getElementById("authEmail")
+      .value
+      .trim();
+
+  const password =
+    document.getElementById("authPassword")
+      .value;
+
+  const name =
+    document.getElementById("authName")
+      .value
+      .trim();
 
 
-    ids.forEach(function (id) {
+  if (!email || !password) {
 
-        const button =
-            document.getElementById(id);
+    alert("Email dan password wajib diisi.");
 
-        if (button) {
+    return;
+  }
 
-            button.classList.remove(
-                "navActive"
-            );
 
-        }
+  if (authMode === "register") {
+
+    if (!name) {
+
+      alert("Masukkan nama kamu.");
+
+      return;
+    }
+
+
+    if (password.length < 6) {
+
+      alert("Password minimal 6 karakter.");
+
+      return;
+    }
+
+
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.signUp({
+
+      email: email,
+
+      password: password
 
     });
 
 
-    let activeId;
+    if (error) {
 
+      alert(error.message);
 
-    if (pageId === "home") {
-
-        activeId = "navHome";
-
-    } else if (pageId === "create") {
-
-        activeId = "navCreate";
-
-    } else if (pageId === "idea") {
-
-        activeId = "navIdea";
-
-    } else if (
-        pageId === "marketplace" ||
-        pageId === "productDetail"
-    ) {
-
-        activeId = "navMarketplace";
-
+      return;
     }
 
 
-    if (activeId) {
+    if (!data.user) {
 
-        const button =
-            document.getElementById(
-                activeId
-            );
+      alert(
+        "Pendaftaran berhasil. Silakan cek email untuk verifikasi."
+      );
 
-        if (button) {
-
-            button.classList.add(
-                "navActive"
-            );
-
-        }
-
+      return;
     }
+
+
+    await createProfile(
+      data.user.id,
+      name
+    );
+
+
+    currentUser = data.user;
+
+
+    alert("Akun berhasil dibuat.");
+
+    updateUI();
+
+    openPage("dashboard");
+
+  } else {
+
+
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.signInWithPassword({
+
+      email: email,
+
+      password: password
+
+    });
+
+
+    if (error) {
+
+      alert(error.message);
+
+      return;
+    }
+
+
+    currentUser = data.user;
+
+    updateUI();
+
+    await loadMyProducts();
+
+    openPage("dashboard");
+  }
 
 }
 
 
-/* =========================================
-   GENERATE PRODUCT
-========================================= */
+/* =====================================================
+   7. CREATE PROFILE
+   ===================================================== */
 
-function generateProduct() {
-
-    const skill =
-        document
-            .getElementById("skill")
-            .value
-            .trim();
-
-
-    const target =
-        document
-            .getElementById("target")
-            .value
-            .trim();
-
-
-    const type =
-        document
-            .getElementById("productType")
-            .value;
-
-
-    const price =
-        Number(
-            document
-                .getElementById("productPrice")
-                .value
-        );
-
-
-    if (!skill) {
-
-        alert(
-            "Tulis dulu keahlian yang kamu punya."
-        );
-
-        return;
-
-    }
-
-
-    if (!target) {
-
-        alert(
-            "Tulis siapa yang membutuhkan produk ini."
-        );
-
-        return;
-
-    }
-
-
-    if (price < 0 || isNaN(price)) {
-
-        alert(
-            "Masukkan harga yang benar."
-        );
-
-        return;
-
-    }
-
-
-    const title =
-        createTitle(
-            skill,
-            type
-        );
-
-
-    const description =
-        createDescription(
-            skill,
-            target,
-            type
-        );
-
-
-    currentProduct = {
-
-        id: createProductId(),
-
-        title: title,
-
-        skill: skill,
-
-        target: target,
-
-        type: type,
-
-        price: price,
-
-        description: description,
-
-        createdAt:
-            new Date().toISOString(),
-
-        published: false,
-
-        sales: 0,
-
-        resellerCount: 0
-
-    };
-
-
-    document.getElementById(
-        "resultTitle"
-    ).textContent =
-        title;
-
-
-    document.getElementById(
-        "resultTitle2"
-    ).textContent =
-        title;
-
-
-    document.getElementById(
-        "resultTarget"
-    ).textContent =
-        "Untuk " + target;
-
-
-    document.getElementById(
-        "resultDescription"
-    ).textContent =
-        description;
-
-
-    document.getElementById(
-        "resultPrice"
-    ).textContent =
-        formatRupiah(price);
-
-
-    showPage("result");
-
-}
-
-
-/* =========================================
-   TITLE
-========================================= */
-
-function createTitle(
-    skill,
-    type
+async function createProfile(
+  userId,
+  name
 ) {
 
-    const clean =
-        capitalize(skill);
+  const {
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .upsert({
+
+      id: userId,
+
+      username:
+        name
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "")
+          .slice(0, 30),
+
+      display_name: name
+
+    });
 
 
-    const titles = {
+  if (error) {
 
-        Ebook:
-            "Panduan " +
-            clean +
-            " untuk Pemula",
-
-        Panduan:
-            "Panduan Praktis " +
-            clean,
-
-        Checklist:
-            "Checklist " +
-            clean +
-            " Anti Bingung",
-
-        Template:
-            "Template Siap Pakai " +
-            clean,
-
-        Worksheet:
-            "Worksheet " +
-            clean +
-            " untuk Pemula"
-
-    };
-
-
-    return (
-        titles[type] ||
-        "Panduan " + clean
+    console.log(
+      "Profile error:",
+      error
     );
+  }
 
 }
 
 
-/* =========================================
-   DESCRIPTION
-========================================= */
+/* =====================================================
+   8. LOGOUT
+   ===================================================== */
 
-function createDescription(
-    skill,
-    target,
-    type
-) {
+async function logout() {
 
-    return (
-        type +
-        " praktis tentang " +
-        skill +
-        " yang dibuat untuk " +
-        target +
-        ". Berisi langkah sederhana, " +
-        "tips penting, dan cara mulai " +
-        "mempraktikkannya."
-    );
+  await supabaseClient.auth.signOut();
+
+  currentUser = null;
+
+  products = [];
+
+  updateUI();
+
+  openPage("home");
 
 }
 
 
-/* =========================================
-   IDEKAN
-========================================= */
+/* =====================================================
+   9. UI USER
+   ===================================================== */
 
-function generateIdeas() {
+function updateUI() {
 
-    const skill =
-        document
-            .getElementById("ideaSkill")
-            .value
-            .trim();
+  const authButton =
+    document.getElementById("authButton");
 
 
-    const results =
-        document.getElementById(
-            "ideaResults"
-        );
+  const loginRequired =
+    document.getElementById("loginRequired");
+
+  const createForm =
+    document.getElementById("createForm");
 
 
-    if (!skill) {
+  if (currentUser) {
 
-        alert(
-            "Tulis dulu keahlianmu."
-        );
+    authButton.textContent = "Keluar";
 
-        return;
+    authButton.onclick = logout;
 
+    loginRequired.classList.add("hidden");
+
+    createForm.classList.remove("hidden");
+
+  } else {
+
+    authButton.textContent = "Masuk";
+
+    authButton.onclick = openAuth;
+
+    loginRequired.classList.remove("hidden");
+
+    createForm.classList.add("hidden");
+  }
+
+}
+
+
+/* =====================================================
+   10. PAGE NAVIGATION
+   ===================================================== */
+
+function openPage(pageId) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(page => {
+
+      page.classList.remove("active");
+
+    });
+
+
+  const page =
+    document.getElementById(pageId);
+
+
+  if (page) {
+
+    page.classList.add("active");
+
+    window.scrollTo(0,0);
+  }
+
+
+  if (pageId === "marketplace") {
+
+    loadMarketplace();
+
+  }
+
+
+  if (pageId === "dashboard") {
+
+    if (!currentUser) {
+
+      openAuth();
+
+      return;
     }
 
+    loadMyProducts();
 
-    const clean =
-        capitalize(skill);
+  }
 
-
-    const ideas = [
-
-        {
-            title:
-                "Panduan " +
-                clean +
-                " untuk Pemula",
-
-            description:
-                "Panduan sederhana dari dasar hingga langkah pertama."
-        },
-
-        {
-            title:
-                "30 Kesalahan dalam " +
-                clean +
-                " yang Harus Dihindari",
-
-            description:
-                "Kumpulan kesalahan umum beserta cara menghindarinya."
-        },
-
-        {
-            title:
-                "Checklist " +
-                clean +
-                " Siap Pakai",
-
-            description:
-                "Checklist praktis agar pengguna bisa mengikuti proses dengan mudah."
-        },
-
-        {
-            title:
-                "Template " +
-                clean +
-                " untuk Pemula",
-
-            description:
-                "Template yang bisa langsung digunakan dan disesuaikan."
-        },
-
-        {
-            title:
-                "7 Hari Belajar " +
-                clean,
-
-            description:
-                "Rencana belajar sederhana selama tujuh hari."
-        }
-
-    ];
+}
 
 
-    results.innerHTML = "";
+/* =====================================================
+   11. SAVE PRODUCT
+   ===================================================== */
+
+async function saveProduct(publish) {
+
+  if (!currentUser) {
+
+    alert("Silakan masuk terlebih dahulu.");
+
+    openAuth();
+
+    return;
+  }
 
 
-    ideas.forEach(
-        function (idea) {
+  const skill =
+    document.getElementById("skill")
+      .value
+      .trim();
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+  const target =
+    document.getElementById("target")
+      .value
+      .trim();
 
+  const type =
+    document.getElementById("productType")
+      .value;
 
-            card.className =
-                "ideaCard";
-
-
-            card.innerHTML = `
-
-                <h3>
-                    ${escapeHtml(
-                        idea.title
-                    )}
-                </h3>
-
-                <p>
-                    ${escapeHtml(
-                        idea.description
-                    )}
-                </p>
-
-                <button
-                    class="secondary full"
-                    onclick="useIdea('${escapeAttribute(
-                        idea.title
-                    )}')"
-                >
-                    ⚡ BUAT PRODUK INI
-                </button>
-
-            `;
-
-
-            results.appendChild(
-                card
-            );
-
-        }
+  const price =
+    Number(
+      document.getElementById("price")
+        .value
     );
 
+  const title =
+    document.getElementById("title")
+      .value
+      .trim();
+
+  const description =
+    document.getElementById("description")
+      .value
+      .trim();
+
+
+  if (!skill ||
+      !target ||
+      !title ||
+      !description) {
+
+    alert(
+      "Lengkapi semua informasi produk."
+    );
+
+    return;
+  }
+
+
+  if (!price || price < 0) {
+
+    alert("Masukkan harga yang valid.");
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("products")
+    .insert({
+
+      creator_id:
+        currentUser.id,
+
+      title: title,
+
+      skill: skill,
+
+      target: target,
+
+      type: type,
+
+      price: price,
+
+      description: description,
+
+      published: publish,
+
+      sales: 0,
+
+      reseller_count: 0
+
+    })
+    .select()
+    .single();
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "Gagal menyimpan produk: " +
+      error.message
+    );
+
+    return;
+  }
+
+
+  showResult(data);
+
+  clearCreateForm();
+
+  await loadMarketplace();
+
+  await loadMyProducts();
+
+  openPage("result");
+
 }
 
 
-/* =========================================
-   USE IDEA
-========================================= */
+/* =====================================================
+   12. RESULT
+   ===================================================== */
 
-function useIdea(title) {
+function showResult(product) {
 
+  const container =
     document.getElementById(
-        "skill"
-    ).value = title;
-
-
-    document.getElementById(
-        "target"
-    ).value =
-        "pemula";
-
-
-    showPage("create");
-
-}
-
-
-/* =========================================
-   PUBLISH
-========================================= */
-
-function publishProduct() {
-
-    if (!currentProduct) {
-
-        alert(
-            "Tidak ada produk."
-        );
-
-        return;
-
-    }
-
-
-    currentProduct.published = true;
-
-
-    products.push(
-        currentProduct
+      "resultContent"
     );
 
 
-    saveProducts();
+  container.innerHTML = `
+
+    <div class="success">
+
+      <div class="product-type">
+        ${escapeHTML(product.type)}
+      </div>
+
+      <h3>
+        ${escapeHTML(product.title)}
+      </h3>
+
+      <div class="price">
+        ${formatRupiah(product.price)}
+      </div>
+
+      <p>
+        ${
+          product.published
+            ? "Produk sudah dipublikasikan ke Marketplace."
+            : "Produk tersimpan sebagai draft."
+        }
+      </p>
+
+    </div>
+
+  `;
+}
 
 
-    renderProducts();
+/* =====================================================
+   13. CLEAR FORM
+   ===================================================== */
 
-    renderMarketplace();
+function clearCreateForm() {
 
-    updateStats();
+  document.getElementById("skill").value = "";
 
+  document.getElementById("target").value = "";
 
-    const link =
-        createProductLink(
-            currentProduct.id
-        );
+  document.getElementById("price").value = "";
 
+  document.getElementById("title").value = "";
 
-    document.getElementById(
-        "publishedProductName"
-    ).textContent =
-        currentProduct.title;
-
-
-    document.getElementById(
-        "productLink"
-    ).textContent =
-        link;
-
-
-    showPage("published");
-
-
-    currentProduct = null;
+  document.getElementById("description").value = "";
 
 }
 
 
-/* =========================================
-   MARKETPLACE
-========================================= */
+/* =====================================================
+   14. LOAD MARKETPLACE
+   ===================================================== */
+
+async function loadMarketplace() {
+
+  const container =
+    document.getElementById(
+      "marketplaceList"
+    );
+
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    `<div class="loading">
+      Memuat marketplace...
+    </div>`;
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("products")
+    .select(`
+      *,
+      profiles (
+        display_name
+      )
+    `)
+    .eq("published", true)
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    container.innerHTML =
+      `<div class="loading">
+        Gagal memuat marketplace.
+      </div>`;
+
+    return;
+  }
+
+
+  products = data || [];
+
+  renderMarketplace(products);
+
+}
+
+
+/* =====================================================
+   15. RENDER MARKETPLACE
+   ===================================================== */
 
 function renderMarketplace(
-    searchTerm = ""
+  list
 ) {
 
-    const container =
-        document.getElementById(
-            "marketplaceList"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
-    const query =
-        String(searchTerm)
-            .toLowerCase()
-            .trim();
-
-
-    let visibleProducts =
-        products.filter(
-            function (product) {
-
-                if (!product.published) {
-                    return false;
-                }
-
-
-                if (!query) {
-                    return true;
-                }
-
-
-                const text =
-                    (
-                        product.title +
-                        " " +
-                        product.description +
-                        " " +
-                        product.type +
-                        " " +
-                        product.target
-                    ).toLowerCase();
-
-
-                return text.includes(query);
-
-            }
-        );
-
-
-    if (
-        visibleProducts.length === 0
-    ) {
-
-        container.innerHTML = `
-
-            <div class="marketEmpty">
-
-                <div class="emptyIcon">
-                    🛒
-                </div>
-
-                <h3>
-                    Belum ada produk
-                </h3>
-
-                <p>
-                    Buat produk pertama untuk
-                    mengisi marketplace.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    container.innerHTML = "";
-
-
-    visibleProducts
-        .slice()
-        .reverse()
-        .forEach(
-            function (product) {
-
-                const card =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                card.className =
-                    "marketCard";
-
-
-                card.innerHTML = `
-
-                    <div class="marketCardTop">
-
-                        <div>
-
-                            <span class="marketType">
-                                ${escapeHtml(
-                                    product.type
-                                )}
-                            </span>
-
-                            <h3>
-                                ${escapeHtml(
-                                    product.title
-                                )}
-                            </h3>
-
-                        </div>
-
-                        <div class="marketPrice">
-                            ${formatRupiah(
-                                product.price
-                            )}
-                        </div>
-
-                    </div>
-
-                    <p>
-                        ${escapeHtml(
-                            product.description
-                        )}
-                    </p>
-
-                    <button
-                        class="primary full"
-                        onclick="openProduct(
-                            '${escapeAttribute(
-                                product.id
-                            )}'
-                        )"
-                    >
-                        LIHAT PRODUK
-                    </button>
-
-                `;
-
-
-                container.appendChild(
-                    card
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================
-   SEARCH
-========================================= */
-
-function searchMarketplace() {
-
-    const input =
-        document.getElementById(
-            "marketSearch"
-        );
-
-
-    renderMarketplace(
-        input ? input.value : ""
+  const container =
+    document.getElementById(
+      "marketplaceList"
     );
 
-}
+
+  if (!list.length) {
+
+    container.innerHTML =
+      `<div class="loading">
+        Belum ada produk.
+      </div>`;
+
+    return;
+  }
 
 
-/* =========================================
-   OPEN PRODUCT
-========================================= */
+  container.innerHTML =
+    list.map(product => `
 
-function openProduct(id) {
+      <div
+        class="product-card"
+        onclick="openProduct('${product.id}')"
+      >
 
-    const product =
-        products.find(
-            function (item) {
+        <div class="product-type">
+          ${escapeHTML(product.type)}
+        </div>
 
-                return (
-                    item.id === id
-                );
+        <h3>
+          ${escapeHTML(product.title)}
+        </h3>
 
-            }
-        );
+        <p>
+          ${escapeHTML(
+            product.description
+          )}
+        </p>
 
+        <div class="price">
+          ${formatRupiah(product.price)}
+        </div>
 
-    if (!product) {
-
-        alert(
-            "Produk tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    selectedProduct =
-        product;
-
-
-    document.getElementById(
-        "detailTitle"
-    ).textContent =
-        product.title;
-
-
-    document.getElementById(
-        "detailTitle2"
-    ).textContent =
-        product.title;
-
-
-    document.getElementById(
-        "detailTarget"
-    ).textContent =
-        "Untuk " +
-        product.target;
-
-
-    document.getElementById(
-        "detailDescription"
-    ).textContent =
-        product.description;
-
-
-    document.getElementById(
-        "detailPrice"
-    ).textContent =
-        formatRupiah(
-            product.price
-        );
-
-
-    showPage(
-        "productDetail"
-    );
-
-}
-
-
-/* =========================================
-   SIMULATE BUY
-========================================= */
-
-function simulateBuy() {
-
-    if (!selectedProduct) {
-
-        alert(
-            "Produk belum dipilih."
-        );
-
-        return;
-
-    }
-
-
-    alert(
-        "DEMO 60DETIK\n\n" +
-        "Pembelian belum aktif.\n\n" +
-        "Pada versi berikutnya kita akan " +
-        "menghubungkan pembayaran dan " +
-        "pengiriman produk otomatis."
-    );
-
-}
-
-
-/* =========================================
-   RESELLER
-========================================= */
-
-function joinReseller() {
-
-    if (!selectedProduct) {
-
-        alert(
-            "Produk belum dipilih."
-        );
-
-        return;
-
-    }
-
-
-    selectedProduct.resellerCount =
-        Number(
-            selectedProduct.resellerCount || 0
-        ) + 1;
-
-
-    saveProducts();
-
-
-    alert(
-        "🚀 MODE RESELLER DEMO\n\n" +
-        "Kamu sekarang menjadi reseller " +
-        "produk ini.\n\n" +
-        "Komisi simulasi: 20%\n\n" +
-        "Sistem komisi sungguhan akan " +
-        "ditambahkan pada versi berikutnya."
-    );
-
-}
-
-
-/* =========================================
-   COPY
-========================================= */
-
-function copyProductLink() {
-
-    const link =
-        document.getElementById(
-            "productLink"
-        ).textContent;
-
-
-    if (
-        navigator.clipboard &&
-        window.isSecureContext
-    ) {
-
-        navigator.clipboard
-            .writeText(link)
-            .then(
-                function () {
-
-                    alert(
-                        "Link berhasil disalin!"
-                    );
-
-                }
+        <div class="meta">
+          Creator:
+          ${
+            escapeHTML(
+              product.profiles?.display_name ||
+              "Creator"
             )
-            .catch(
-                function () {
+          }
+        </div>
 
-                    fallbackCopy(link);
+      </div>
 
-                }
-            );
-
-    } else {
-
-        fallbackCopy(link);
-
-    }
+    `)
+    .join("");
 
 }
 
 
-function fallbackCopy(text) {
+/* =====================================================
+   16. SEARCH
+   ===================================================== */
 
-    const textarea =
-        document.createElement(
-            "textarea"
-        );
+function searchProducts() {
+
+  const keyword =
+    document.getElementById(
+      "searchInput"
+    )
+    .value
+    .toLowerCase()
+    .trim();
 
 
-    textarea.value =
-        text;
+  if (!keyword) {
+
+    renderMarketplace(products);
+
+    return;
+  }
 
 
-    document.body.appendChild(
-        textarea
+  const filtered =
+    products.filter(product => {
+
+      return (
+
+        product.title
+          ?.toLowerCase()
+          .includes(keyword)
+
+        ||
+
+        product.description
+          ?.toLowerCase()
+          .includes(keyword)
+
+        ||
+
+        product.skill
+          ?.toLowerCase()
+          .includes(keyword)
+
+        ||
+
+        product.target
+          ?.toLowerCase()
+          .includes(keyword)
+
+      );
+
+    });
+
+
+  renderMarketplace(filtered);
+
+}
+
+
+/* =====================================================
+   17. OPEN PRODUCT
+   ===================================================== */
+
+async function openProduct(id) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("products")
+    .select(`
+      *,
+      profiles (
+        display_name
+      )
+    `)
+    .eq("id", id)
+    .single();
+
+
+  if (error) {
+
+    alert("Produk tidak ditemukan.");
+
+    return;
+  }
+
+
+  const container =
+    document.getElementById(
+      "productDetailContent"
     );
 
 
-    textarea.select();
+  container.innerHTML = `
 
+    <div class="detail-box">
 
-    try {
+      <div class="product-type">
+        ${escapeHTML(productType(data))}
+      </div>
 
-        document.execCommand(
-            "copy"
-        );
+      <h1>
+        ${escapeHTML(data.title)}
+      </h1>
 
-        alert(
-            "Link berhasil disalin!"
-        );
-
-    } catch (error) {
-
-        alert(
-            "Silakan salin link secara manual."
-        );
-
-    }
-
-
-    document.body.removeChild(
-        textarea
-    );
-
-}
-
-
-/* =========================================
-   SHARE
-========================================= */
-
-function shareProduct() {
-
-    const link =
-        document.getElementById(
-            "productLink"
-        ).textContent;
-
-
-    const name =
-        document.getElementById(
-            "publishedProductName"
-        ).textContent;
-
-
-    const text =
-        "Lihat produk digital saya di 60DETIK: " +
-        name;
-
-
-    if (
-        navigator.share
-    ) {
-
-        navigator.share({
-
-            title: name,
-
-            text: text,
-
-            url: link
-
-        }).catch(
-            function () {}
-        );
-
-    } else {
-
-        copyProductLink();
-
-    }
-
-}
-
-
-/* =========================================
-   LOCAL STORAGE
-========================================= */
-
-function saveProducts() {
-
-    try {
-
-        localStorage.setItem(
-            "60detik_products",
-            JSON.stringify(products)
-        );
-
-    } catch (error) {
-
-        console.error(error);
-
-    }
-
-}
-
-
-function loadProducts() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                "60detik_products"
-            );
-
-
-        if (saved) {
-
-            products =
-                JSON.parse(saved);
-
+      <div class="creator">
+        Oleh
+        ${
+          escapeHTML(
+            data.profiles?.display_name ||
+            "Creator"
+          )
         }
+      </div>
 
-    } catch (error) {
+      <div class="price">
+        ${formatRupiah(data.price)}
+      </div>
 
-        products = [];
+      <p>
+        ${escapeHTML(data.description)}
+      </p>
 
-    }
+      <div class="meta">
+        Keahlian:
+        ${escapeHTML(data.skill || "-")}
+      </div>
 
-}
+      <div class="meta">
+        Untuk:
+        ${escapeHTML(data.target || "-")}
+      </div>
 
+      <button
+        class="primary-btn"
+        onclick="simulateBuy('${data.id}')"
+      >
+        BELI PRODUK
+      </button>
 
-/* =========================================
-   PRODUCT LIST
-========================================= */
+      <button
+        class="secondary-btn"
+        onclick="joinReseller('${data.id}')"
+      >
+        JUAL PRODUK INI
+      </button>
 
-function renderProducts() {
+    </div>
 
-    const container =
-        document.getElementById(
-            "productList"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
-    if (products.length === 0) {
-
-        container.innerHTML = `
-
-            <div class="empty">
-
-                <div class="emptyIcon">
-                    📦
-                </div>
-
-                <h3>
-                    Belum ada produk
-                </h3>
-
-                <p>
-                    Buat produk pertamamu sekarang.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
+  `;
 
 
-    container.innerHTML = "";
-
-
-    products
-        .slice()
-        .reverse()
-        .forEach(
-            function (product) {
-
-                const card =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                card.className =
-                    "productCard";
-
-
-                card.innerHTML = `
-
-                    <div class="productCardTop">
-
-                        <div>
-
-                            <h3>
-                                ${escapeHtml(
-                                    product.title
-                                )}
-                            </h3>
-
-                            <span class="productType">
-                                ${escapeHtml(
-                                    product.type
-                                )}
-                            </span>
-
-                        </div>
-
-                        <div class="productPrice">
-                            ${formatRupiah(
-                                product.price
-                            )}
-                        </div>
-
-                    </div>
-
-                    <div class="productStatus">
-
-                        <span>
-                            ✓ Terbit
-                        </span>
-
-                        <span>
-                            Terjual:
-                            ${product.sales || 0}
-                        </span>
-
-                    </div>
-
-                `;
-
-
-                container.appendChild(
-                    card
-                );
-
-            }
-        );
+  openPage("productDetail");
 
 }
 
 
-/* =========================================
-   STATS
-========================================= */
+/* =====================================================
+   18. BUY DEMO
+   ===================================================== */
 
-function updateStats() {
+function simulateBuy(id) {
 
-    const count =
-        products.length;
-
-
-    const sales =
-        products.reduce(
-            function (
-                total,
-                product
-            ) {
-
-                return (
-                    total +
-                    Number(
-                        product.sales || 0
-                    )
-                );
-
-            },
-            0
-        );
-
-
-    const income =
-        products.reduce(
-            function (
-                total,
-                product
-            ) {
-
-                return (
-                    total +
-                    Number(
-                        product.price || 0
-                    ) *
-                    Number(
-                        product.sales || 0
-                    )
-                );
-
-            },
-            0
-        );
-
-
-    const countElement =
-        document.getElementById(
-            "productCount"
-        );
-
-
-    const salesElement =
-        document.getElementById(
-            "salesCount"
-        );
-
-
-    const incomeElement =
-        document.getElementById(
-            "income"
-        );
-
-
-    if (countElement) {
-
-        countElement.textContent =
-            count;
-
-    }
-
-
-    if (salesElement) {
-
-        salesElement.textContent =
-            sales;
-
-    }
-
-
-    if (incomeElement) {
-
-        incomeElement.textContent =
-            formatRupiah(
-                income
-            );
-
-    }
+  alert(
+    "Pembelian belum menggunakan pembayaran nyata.\n\n" +
+    "Fitur pembayaran akan kita buat pada tahap berikutnya."
+  );
 
 }
 
 
-/* =========================================
-   HELPERS
-========================================= */
+/* =====================================================
+   19. RESELLER DEMO
+   ===================================================== */
 
-function formatRupiah(number) {
+function joinReseller(id) {
 
-    return (
-        "Rp" +
-        Number(number || 0)
-            .toLocaleString(
-                "id-ID"
-            )
+  alert(
+    "Sistem reseller akan kita aktifkan pada V0.8.\n\n" +
+    "Untuk sekarang tombol ini masih simulasi."
+  );
+
+}
+
+
+/* =====================================================
+   20. MY PRODUCTS
+   ===================================================== */
+
+async function loadMyProducts() {
+
+  if (!currentUser) return;
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("products")
+    .select("*")
+    .eq(
+      "creator_id",
+      currentUser.id
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+
+  if (error) {
+
+    console.error(error);
+
+    return;
+  }
+
+
+  renderMyProducts(
+    data || []
+  );
+
+
+  updateStats(
+    data || []
+  );
+
+
+  await loadProfile();
+
+}
+
+
+/* =====================================================
+   21. RENDER MY PRODUCTS
+   ===================================================== */
+
+function renderMyProducts(
+  list
+) {
+
+  const container =
+    document.getElementById(
+      "myProducts"
+    );
+
+
+  if (!list.length) {
+
+    container.innerHTML =
+      `<div class="loading">
+        Kamu belum membuat produk.
+      </div>`;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    list.map(product => `
+
+      <div class="product-card">
+
+        <div class="product-type">
+          ${escapeHTML(product.type)}
+        </div>
+
+        <h3>
+          ${escapeHTML(product.title)}
+        </h3>
+
+        <div class="price">
+          ${formatRupiah(product.price)}
+        </div>
+
+        <div class="meta">
+          ${
+            product.published
+              ? "● Published"
+              : "○ Draft"
+          }
+        </div>
+
+        <div class="meta">
+          Penjualan:
+          ${product.sales || 0}
+        </div>
+
+      </div>
+
+    `)
+    .join("");
+
+}
+
+
+/* =====================================================
+   22. STATS
+   ===================================================== */
+
+function updateStats(
+  list
+) {
+
+  document.getElementById(
+    "statProducts"
+  ).textContent =
+    list.length;
+
+
+  document.getElementById(
+    "statPublished"
+  ).textContent =
+    list.filter(
+      p => p.published
+    ).length;
+
+
+  document.getElementById(
+    "statSales"
+  ).textContent =
+    list.reduce(
+      (total, p) =>
+        total + (p.sales || 0),
+      0
     );
 
 }
 
 
-function capitalize(text) {
+/* =====================================================
+   23. PROFILE
+   ===================================================== */
 
-    if (!text) {
-        return "";
-    }
+async function loadProfile() {
+
+  if (!currentUser) return;
 
 
-    return (
-        text.charAt(0).toUpperCase() +
-        text.slice(1)
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq(
+      "id",
+      currentUser.id
+    )
+    .maybeSingle();
+
+
+  if (error) {
+
+    console.log(error);
+
+    return;
+  }
+
+
+  const profileInfo =
+    document.getElementById(
+      "profileInfo"
     );
 
-}
 
+  if (data) {
 
-function createProductId() {
+    profileInfo.textContent =
+      data.display_name ||
+      currentUser.email;
 
-    return (
-        Date.now()
-            .toString()
-            .slice(-8) +
-        Math.floor(
-            Math.random() * 100
-        )
-            .toString()
-            .padStart(2, "0")
-    );
+  } else {
+
+    profileInfo.textContent =
+      currentUser.email;
+  }
 
 }
 
 
-function createProductLink(id) {
+/* =====================================================
+   24. HELPERS
+   ===================================================== */
 
-    return (
-        window.location.origin +
-        window.location.pathname +
-        "?product=" +
-        encodeURIComponent(id)
-    );
+function formatRupiah(
+  value
+) {
 
-}
-
-
-function escapeHtml(text) {
-
-    const div =
-        document.createElement(
-            "div"
-        );
-
-
-    div.textContent =
-        String(text);
-
-
-    return div.innerHTML;
-
-}
-
-
-function escapeAttribute(text) {
-
-    return String(text)
-        .replace(
-            /\\/g,
-            "\\\\"
-        )
-        .replace(
-            /'/g,
-            "\\'"
-        );
-
-}
-
-
-/* =========================================
-   URL PRODUCT
-========================================= */
-
-function loadProductFromUrl() {
-
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
-
-
-    const id =
-        params.get(
-            "product"
-        );
-
-
-    if (!id) {
-        return;
+  return new Intl.NumberFormat(
+    "id-ID",
+    {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0
     }
+  ).format(value || 0);
+
+}
 
 
-    const product =
-        products.find(
-            function (item) {
+function escapeHTML(
+  value
+) {
 
-                return (
-                    item.id === id
-                );
+  if (value === null ||
+      value === undefined) {
 
-            }
-        );
+    return "";
 
-
-    if (!product) {
-        return;
-    }
+  }
 
 
-    openProduct(id);
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
-       }
+}
+
+
+function productType(
+  product
+) {
+
+  return product.type || "Produk";
+
+}
+
+
+/* =====================================================
+   END
+   ===================================================== */
