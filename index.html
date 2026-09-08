@@ -243,7 +243,27 @@
 
 </section>
 
+<section id="orders" class="page">
+  <div class="section-header">
+    <div>
+      <h2>Pesanan Saya</h2>
+      <p>Lihat pesanan dan status pembayaran kamu.</p>
+    </div>
+  </div>
 
+  <div id="ordersLoginRequired" class="notice hidden">
+    <h3>🔐 Login diperlukan</h3>
+    <p>Masuk terlebih dahulu untuk melihat pesanan.</p>
+    <button class="primary-btn" onclick="openAuth()">Masuk</button>
+  </div>
+
+  <div id="ordersList" class="product-grid">
+    <div class="notice">
+      Belum ada pesanan.
+    </div>
+  </div>
+</section>
+  
 <!-- ================= DASHBOARD ================= -->
 
 <section id="dashboard" class="page">
@@ -423,6 +443,11 @@
   <button onclick="openPage('create')">
     <span>＋</span>
     Buat
+  </button>
+
+  <button onclick="openPage('orders')">
+  <span>🧾</span>
+  <small>Pesanan</small>
   </button>
 
   <button onclick="openPage('dashboard')">
