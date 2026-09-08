@@ -1,41 +1,26 @@
-/* =========================================
-   60DETIK V0.2
-   STYLE
-========================================= */
-
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-
 :root {
     --bg: #08080c;
     --panel: #111116;
     --panel2: #17171e;
     --border: #292932;
-
     --text: #ffffff;
     --muted: #9999a6;
-
-    --accent: #ffffff;
-    --accentText: #000000;
-
     --success: #7dff9a;
-
     --radius: 18px;
 }
-
 
 html {
     scroll-behavior: smooth;
 }
 
-
 body {
     min-height: 100vh;
-
     background:
         radial-gradient(
             circle at top,
@@ -43,9 +28,7 @@ body {
             #08080c 42%,
             #050507 100%
         );
-
     color: var(--text);
-
     font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -53,10 +36,8 @@ body {
         Roboto,
         Arial,
         sans-serif;
-
     padding-bottom: 90px;
 }
-
 
 button,
 input,
@@ -65,666 +46,444 @@ select {
     font: inherit;
 }
 
-
 button {
     cursor: pointer;
 }
 
-
-/* =========================================
-   TOPBAR
-========================================= */
-
 .topbar {
     position: sticky;
-
     top: 0;
-
     z-index: 100;
-
     height: 64px;
-
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     padding: 0 18px;
-
     background: rgba(8, 8, 12, 0.88);
-
     backdrop-filter: blur(18px);
-
     border-bottom: 1px solid var(--border);
 }
 
-
 .logo {
     font-size: 20px;
-
     font-weight: 900;
-
     letter-spacing: 1px;
 }
-
 
 .logo span {
     opacity: 0.55;
 }
 
-
 .profileBtn {
     width: 42px;
-
     height: 42px;
-
     border-radius: 50%;
-
     border: 1px solid var(--border);
-
     background: var(--panel2);
-
     color: white;
-
     font-size: 18px;
 }
 
-
-/* =========================================
-   PAGE
-========================================= */
-
 main {
     width: 100%;
-
     max-width: 700px;
-
     margin: auto;
-
     padding: 0 16px;
 }
 
-
 .page {
     display: none;
-
     min-height: calc(100vh - 150px);
-
     padding-top: 30px;
-
     animation: fadeIn 0.25s ease;
 }
-
 
 .page.active {
     display: block;
 }
 
-
 @keyframes fadeIn {
-
     from {
         opacity: 0;
-
         transform: translateY(8px);
     }
 
     to {
         opacity: 1;
-
         transform: translateY(0);
     }
-
 }
-
-
-/* =========================================
-   HERO
-========================================= */
 
 .hero {
     text-align: center;
-
-    padding:
-        70px
-        10px
-        50px;
+    padding: 70px 10px 50px;
 }
-
 
 .badge,
 .miniBadge {
     display: inline-block;
-
     padding: 7px 12px;
-
     border-radius: 999px;
-
     background: #17171e;
-
     border: 1px solid var(--border);
-
     color: #cfcfd8;
-
     font-size: 11px;
-
     font-weight: 800;
-
     letter-spacing: 1px;
 }
 
-
 .hero h1 {
     margin-top: 22px;
-
     font-size: clamp(38px, 10vw, 68px);
-
     line-height: 0.98;
-
     letter-spacing: -3px;
-
     font-weight: 950;
 }
-
 
 .hero h1 span {
     color: #8e8e9b;
 }
 
-
 .hero p {
     max-width: 480px;
-
     margin: 25px auto;
-
     color: var(--muted);
-
     line-height: 1.7;
-
     font-size: 16px;
 }
 
-
-/* =========================================
-   BUTTONS
-========================================= */
-
 .primary,
 .secondary,
-.textButton {
-    width: auto;
-
+.textButton,
+.marketButton,
+.backButton {
     min-height: 50px;
-
     border-radius: 13px;
-
     padding: 13px 18px;
-
     font-weight: 800;
-
-    border: none;
-
     transition:
         transform 0.15s ease,
         opacity 0.15s ease;
 }
 
-
 .primary {
-    background: var(--accent);
-
-    color: var(--accentText);
-}
-
-
-.secondary {
-    background: transparent;
-
-    color: white;
-
-    border: 1px solid var(--border);
-}
-
-
-.textButton {
-    background: transparent;
-
-    color: var(--muted);
-
+    background: white;
+    color: black;
     border: none;
 }
 
+.secondary {
+    background: transparent;
+    color: white;
+    border: 1px solid var(--border);
+}
+
+.marketButton {
+    width: 100%;
+    max-width: 390px;
+    margin-top: 12px;
+    background: #15151c;
+    color: white;
+    border: 1px solid var(--border);
+}
+
+.textButton {
+    background: transparent;
+    color: var(--muted);
+    border: none;
+}
+
+.backButton {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding-left: 0;
+}
 
 .primary:hover,
 .secondary:hover,
-.textButton:hover {
+.marketButton:hover,
+.backButton:hover {
     transform: translateY(-2px);
 }
 
-
-.primary:active,
-.secondary:active {
-    transform: scale(0.98);
-}
-
-
 .big {
     width: 100%;
-
     max-width: 390px;
-
     margin-top: 12px;
-
     min-height: 56px;
-
     font-size: 15px;
 }
 
-
 .full {
     width: 100%;
-
     margin-top: 12px;
 }
 
-
-/* =========================================
-   FEATURES
-========================================= */
-
 .features {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-
     margin-bottom: 30px;
 }
 
-
 .featureCard {
     padding: 18px 12px;
-
     background: rgba(17, 17, 22, 0.75);
-
     border: 1px solid var(--border);
-
     border-radius: var(--radius);
-
     text-align: center;
 }
 
-
 .featureIcon {
     font-size: 23px;
-
     margin-bottom: 10px;
 }
-
 
 .featureCard b {
     font-size: 12px;
 }
 
-
 .featureCard p {
     margin-top: 7px;
-
     color: var(--muted);
-
     font-size: 11px;
-
     line-height: 1.4;
 }
-
-
-/* =========================================
-   PAGE TITLE
-========================================= */
 
 .pageTitle {
     padding: 10px 2px 22px;
 }
 
-
 .pageTitle h2 {
     margin-top: 12px;
-
     font-size: 30px;
-
     letter-spacing: -1px;
 }
 
-
 .pageTitle p {
     margin-top: 7px;
-
     color: var(--muted);
-
     line-height: 1.5;
 }
 
-
-/* =========================================
-   STATS
-========================================= */
-
 .stats {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
+    grid-template-columns: repeat(3, 1fr);
     gap: 9px;
-
     margin-bottom: 14px;
 }
 
-
 .stat {
     min-width: 0;
-
     padding: 16px 12px;
-
     background: var(--panel);
-
     border: 1px solid var(--border);
-
     border-radius: 15px;
 }
 
-
 .stat span {
     display: block;
-
     color: var(--muted);
-
     font-size: 11px;
-
     margin-bottom: 8px;
 }
-
 
 .stat strong {
     font-size: 17px;
-
     word-break: break-word;
 }
 
-
-/* =========================================
-   CARD
-========================================= */
-
 .card {
     background: rgba(17, 17, 22, 0.85);
-
     border: 1px solid var(--border);
-
     border-radius: var(--radius);
-
     padding: 18px;
-
-    box-shadow:
-        0 15px 50px rgba(0, 0, 0, 0.25);
 }
-
 
 .card label {
     display: block;
-
     margin-top: 17px;
-
     margin-bottom: 8px;
-
     color: #ddddE5;
-
     font-size: 13px;
-
     font-weight: 700;
 }
-
 
 .card label:first-child {
     margin-top: 0;
 }
 
-
 .card input,
 .card textarea,
-.card select {
+.card select,
+.marketSearch input {
     width: 100%;
-
     border: 1px solid var(--border);
-
     border-radius: 12px;
-
     background: #0b0b0f;
-
     color: white;
-
     outline: none;
-
     padding: 13px 14px;
 }
 
-
 .card textarea {
     min-height: 110px;
-
     resize: vertical;
-
     line-height: 1.5;
 }
 
-
 .card input:focus,
 .card textarea:focus,
-.card select:focus {
+.card select:focus,
+.marketSearch input:focus {
     border-color: #656572;
 }
 
-
-.card select {
-    appearance: auto;
-}
-
-
-/* =========================================
-   SECTION
-========================================= */
-
 .sectionTitle {
     margin-top: 30px;
-
     margin-bottom: 12px;
-
     font-size: 15px;
-
     font-weight: 800;
 }
 
-
-/* =========================================
-   EMPTY
-========================================= */
-
 .empty {
     padding: 40px 20px;
-
     border-radius: var(--radius);
-
     border: 1px dashed var(--border);
-
     text-align: center;
 }
 
-
 .emptyIcon {
     font-size: 42px;
-
     margin-bottom: 12px;
 }
-
 
 .empty h3 {
     font-size: 17px;
 }
 
-
 .empty p {
     color: var(--muted);
-
     margin-top: 6px;
-
     font-size: 13px;
 }
-
-
-/* =========================================
-   IDEA RESULTS
-========================================= */
 
 .ideaResults {
     margin-top: 16px;
 }
 
-
-.ideaCard {
+.ideaCard,
+.marketCard {
     padding: 17px;
-
     margin-bottom: 10px;
-
     background: var(--panel);
-
     border: 1px solid var(--border);
-
     border-radius: 15px;
 }
 
-
-.ideaCard h3 {
+.ideaCard h3,
+.marketCard h3 {
     font-size: 16px;
-
     margin-bottom: 7px;
 }
 
-
-.ideaCard p {
+.ideaCard p,
+.marketCard p {
     color: var(--muted);
-
     font-size: 13px;
-
     line-height: 1.5;
 }
 
-
-.ideaCard button {
-    margin-top: 12px;
-}
-
-
-/* =========================================
-   PRODUCT LIST
-========================================= */
-
 .productCard {
     padding: 16px;
-
     margin-bottom: 10px;
-
     background: var(--panel);
-
     border: 1px solid var(--border);
-
     border-radius: 16px;
 }
 
-
 .productCardTop {
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     gap: 12px;
 }
 
-
 .productCard h3 {
     font-size: 16px;
-
     line-height: 1.3;
 }
 
-
 .productType {
     display: inline-block;
-
     margin-top: 7px;
-
     color: var(--muted);
-
     font-size: 11px;
 }
-
 
 .productPrice {
     font-weight: 900;
-
     white-space: nowrap;
 }
 
-
 .productStatus {
     margin-top: 14px;
-
     padding-top: 12px;
-
     border-top: 1px solid var(--border);
-
     display: flex;
-
     justify-content: space-between;
-
     color: var(--muted);
-
     font-size: 11px;
 }
 
+.marketSearch {
+    margin-bottom: 15px;
+}
 
-/* =========================================
-   PRODUCT PREVIEW
-========================================= */
+.marketCardTop {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.marketType {
+    display: inline-block;
+    color: var(--muted);
+    font-size: 10px;
+    margin-bottom: 8px;
+}
+
+.marketPrice {
+    white-space: nowrap;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.marketCard button {
+    margin-top: 14px;
+}
+
+.marketEmpty {
+    text-align: center;
+    padding: 40px 15px;
+    color: var(--muted);
+}
 
 .productPreview {
     overflow: hidden;
-
     background: var(--panel);
-
     border: 1px solid var(--border);
-
     border-radius: 20px;
 }
 
-
 .cover {
     min-height: 310px;
-
     padding: 25px;
-
     display: flex;
-
     flex-direction: column;
-
     justify-content: center;
-
     text-align: center;
-
     background:
         radial-gradient(
             circle at 50% 0%,
@@ -732,318 +491,271 @@ main {
             #111116 65%,
             #0b0b0f
         );
-
     border-bottom: 1px solid var(--border);
 }
 
-
 .cover small {
     font-weight: 900;
-
     letter-spacing: 3px;
-
     font-size: 11px;
-
     opacity: 0.6;
 }
 
-
 .cover h1 {
     margin: 25px 0 12px;
-
     font-size: clamp(28px, 8vw, 46px);
-
     line-height: 1;
-
     letter-spacing: -2px;
 }
-
 
 .cover p {
     color: #bdbdc7;
 }
 
-
 .coverBottom {
     margin-top: auto;
-
     padding-top: 35px;
-
     font-size: 10px;
-
     letter-spacing: 2px;
-
     opacity: 0.45;
 }
 
-
-.productBody {
+.productBody,
+.detailBody {
     padding: 20px;
 }
 
-
 .success {
     display: inline-block;
-
     padding: 7px 10px;
-
     border-radius: 8px;
-
     background: rgba(125, 255, 154, 0.08);
-
     border: 1px solid rgba(125, 255, 154, 0.2);
-
     color: var(--success);
-
     font-size: 10px;
-
     font-weight: 800;
 }
 
-
-.productBody h2 {
+.productBody h2,
+.detailBody h2 {
     margin-top: 18px;
-
     font-size: 22px;
 }
 
-
-.productBody > p {
+.productBody > p,
+.detailBody > p {
     margin-top: 9px;
-
     color: var(--muted);
-
     line-height: 1.6;
-
     font-size: 13px;
 }
 
-
 .included {
     margin-top: 17px;
-
     display: grid;
-
     gap: 8px;
 }
 
-
 .included div {
     padding: 10px;
-
     background: #0c0c10;
-
     border-radius: 9px;
-
     font-size: 12px;
-
     color: #c9c9d1;
 }
 
-
 .price {
     margin-top: 20px;
-
     padding: 15px;
-
     border-radius: 13px;
-
     background: #0b0b0f;
-
     border: 1px solid var(--border);
 }
 
-
 .price small {
     display: block;
-
     color: var(--muted);
-
     font-size: 9px;
-
     letter-spacing: 1px;
-
     margin-bottom: 4px;
 }
-
 
 .price strong {
     font-size: 25px;
 }
 
-
-/* =========================================
-   PUBLISHED
-========================================= */
-
-.publishedCard {
-    margin-top: 30px;
-
-    padding: 28px 20px;
-
-    text-align: center;
-
-    background: var(--panel);
-
-    border: 1px solid var(--border);
-
-    border-radius: 22px;
-}
-
-
-.check {
-    width: 70px;
-
-    height: 70px;
-
-    margin: 0 auto 18px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: #ffffff;
-
-    color: #000000;
-
-    font-size: 32px;
-
-    font-weight: 900;
-}
-
-
-.publishedCard h2 {
+.detailCover {
     margin-top: 15px;
-
-    font-size: 27px;
+    min-height: 270px;
+    padding: 30px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            #33333f,
+            #111116 65%,
+            #0b0b0f
+        );
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 }
 
+.detailCover small {
+    font-size: 10px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
 
-.publishedCard > p {
-    margin-top: 8px;
+.detailCover h1 {
+    margin-top: 25px;
+    font-size: clamp(30px, 8vw, 48px);
+    line-height: 1;
+}
 
+.detailCover p {
+    margin-top: 15px;
     color: var(--muted);
+}
 
+.resellerBox {
+    margin-top: 22px;
+    padding: 18px;
+    border-radius: 17px;
+    border: 1px solid var(--border);
+    background: #0c0c10;
+}
+
+.resellerIcon {
+    font-size: 30px;
+}
+
+.resellerBox h3 {
+    margin-top: 10px;
+    font-size: 19px;
+}
+
+.resellerBox p {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 13px;
     line-height: 1.5;
 }
 
+.commission {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #15151c;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.commission strong {
+    display: block;
+    margin-top: 3px;
+    color: white;
+    font-size: 20px;
+}
+
+.publishedCard {
+    margin-top: 30px;
+    padding: 28px 20px;
+    text-align: center;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+}
+
+.check {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: white;
+    color: black;
+    font-size: 32px;
+    font-weight: 900;
+}
+
+.publishedCard h2 {
+    margin-top: 15px;
+    font-size: 27px;
+}
+
+.publishedCard > p {
+    margin-top: 8px;
+    color: var(--muted);
+    line-height: 1.5;
+}
 
 .publishedProductName {
     margin-top: 20px;
-
     font-weight: 900;
-
     font-size: 17px;
 }
 
-
 .link {
     margin-top: 13px;
-
     padding: 13px;
-
     border-radius: 10px;
-
     background: #0b0b0f;
-
     border: 1px solid var(--border);
-
     color: #cfcfd7;
-
     font-size: 11px;
-
     word-break: break-all;
 }
 
-
-/* =========================================
-   BOTTOM NAV
-========================================= */
-
 .bottomNav {
     position: fixed;
-
     left: 50%;
-
     bottom: 10px;
-
     transform: translateX(-50%);
-
     z-index: 200;
-
     width: calc(100% - 20px);
-
     max-width: 500px;
-
     height: 68px;
-
     display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
+    grid-template-columns: repeat(4, 1fr);
     padding: 7px;
-
     background: rgba(17, 17, 22, 0.92);
-
     border: 1px solid var(--border);
-
     border-radius: 20px;
-
     backdrop-filter: blur(20px);
-
-    box-shadow:
-        0 15px 45px rgba(0, 0, 0, 0.45);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.45);
 }
-
 
 .bottomNav button {
     border: none;
-
     background: transparent;
-
     color: #777783;
-
     border-radius: 14px;
-
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     justify-content: center;
-
     gap: 3px;
 }
-
 
 .bottomNav button span {
     font-size: 18px;
 }
 
-
 .bottomNav button small {
     font-size: 9px;
-
     font-weight: 700;
 }
 
-
 .bottomNav button.navActive {
-    background: #ffffff;
-
-    color: #000000;
+    background: white;
+    color: black;
 }
-
-
-/* =========================================
-   RESPONSIVE
-========================================= */
 
 @media (max-width: 480px) {
 
@@ -1066,20 +778,16 @@ main {
     .featureCard p {
         font-size: 10px;
     }
-
 }
-
 
 @media (min-width: 700px) {
 
     main {
         padding-left: 20px;
-
         padding-right: 20px;
     }
 
     .hero {
         padding-top: 100px;
     }
-
 }
