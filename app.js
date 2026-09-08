@@ -1,15 +1,14 @@
 // =====================================================
-// 60DETIK V0.5 - FINAL COMPATIBLE
+// 60DETIK V0.5.2 - STABLE
 // =====================================================
 
-const SUPABASE_URL = "https://crbobpsgaryhqcinfeow.supabase.co";
-const SUPABASE_KEY = "sb_publishable_35Owtv9UK_5i7MCeN2jnFQ_agbwLkkh";
+const SUPABASE_URL =
+  "https://crbobpsgaryhqcinfeow.supabase.co";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const SUPABASE_KEY =
+  "sb_publishable_35Owtv9UK_5i7MCeN2jnFQ_agbwLkkh";
 
+let supabaseClient = null;
 let currentUser = null;
 let currentProduct = null;
 let authMode = "login";
@@ -18,18 +17,61 @@ const $ = (id) => document.getElementById(id);
 
 
 // =====================================================
+// SUPABASE SAFE INITIALIZATION
+// =====================================================
+
+function initSupabase() {
+
+  try {
+
+    if (
+      window.supabase &&
+      typeof window.supabase.createClient === "function"
+    ) {
+
+      supabaseClient =
+        window.supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_KEY
+        );
+
+      return true;
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Supabase initialization error:",
+      error
+    );
+
+  }
+
+  return false;
+}
+
+
+// =====================================================
 // HELPERS
 // =====================================================
 
 function rupiah(value) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0
-  }).format(Number(value || 0));
+
+  return new Intl.NumberFormat(
+    "id-ID",
+    {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0
+    }
+  ).format(
+    Number(value || 0)
+  );
 }
 
+
 function escapeHTML(value) {
+
   return String(value || "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -38,16 +80,43 @@ function escapeHTML(value) {
     .replace(/'/g, "&#039;");
 }
 
-function productEmoji(type) {
-  const t = String(type || "").toLowerCase();
 
-  if (t.includes("ebook")) return "📘";
-  if (t.includes("panduan")) return "📚";
-  if (t.includes("checklist")) return "✅";
-  if (t.includes("template")) return "📄";
-  if (t.includes("worksheet")) return "📝";
+function productEmoji(type) {
+
+  const t =
+    String(type || "").toLowerCase();
+
+  if (t.includes("ebook"))
+    return "📘";
+
+  if (t.includes("panduan"))
+    return "📚";
+
+  if (t.includes("checklist"))
+    return "✅";
+
+  if (t.includes("template"))
+    return "📄";
+
+  if (t.includes("worksheet"))
+    return "📝";
 
   return "💡";
+}
+
+
+function supabaseReady() {
+
+  if (!supabaseClient) {
+
+    alert(
+      "Koneksi sistem belum siap. Silakan refresh halaman."
+    );
+
+    return false;
+  }
+
+  return true;
 }
 
 
@@ -56,118 +125,238 @@ function productEmoji(type) {
 // =====================================================
 
 function openPage(pageId) {
+
   document
     .querySelectorAll(".page")
     .forEach(page => {
+
       page.classList.remove("active");
+
     });
+
 
   const page = $(pageId);
 
   if (page) {
+
     page.classList.add("active");
-    window.scrollTo(0, 0);
+
+    window.scrollTo(
+      0,
+      0
+    );
+
   }
+
 
   updateUI();
 
-if (pageId === "orders") {
-  loadOrders();
-}
 
-// =====================================================
-// AUTH
-// =====================================================
+  if (pageId === "marketplace") {
 
-async function checkUser() {
-  const {
-    data: { session }
-  } = await supabaseClient.auth.getSession();
+    loadMarketplace();
 
-  currentUser = session?.user || null;
+  }
 
-  updateUI();
 
-  if (currentUser) {
-    await loadProfile();
-    await loadMarketplace();
-    await loadMyProducts();
+  if (pageId === "dashboard") {
+
+    loadMyProducts();
+
+  }
+
+
+  if (pageId === "orders") {
+
+    loadOrders();
+
   }
 }
 
-supabaseClient.auth.onAuthStateChange(
-  (_event, session) => {
-    currentUser = session?.user || null;
-    updateUI();
-  }
-);
+
+// =====================================================
+// UI
+// =====================================================
 
 function updateUI() {
-  const button = $("authButton");
 
-  if (!button) return;
+  const button =
+    $("authButton");
 
-  if (currentUser) {
-    button.textContent = "Keluar";
-    button.onclick = logout;
-  } else {
-    button.textContent = "Masuk";
-    button.onclick = openAuth;
+
+  if (button) {
+
+    if (currentUser) {
+
+      button.textContent =
+        "Keluar";
+
+      button.onclick =
+        logout;
+
+    } else {
+
+      button.textContent =
+        "Masuk";
+
+      button.onclick =
+        openAuth;
+
+    }
+
   }
 
-  const createForm = $("createForm");
-  const loginRequired = $("loginRequired");
 
-  if (createForm && loginRequired) {
+  const createForm =
+    $("createForm");
+
+  const loginRequired =
+    $("loginRequired");
+
+
+  if (
+    createForm &&
+    loginRequired
+  ) {
+
     if (currentUser) {
-      createForm.classList.remove("hidden");
-      loginRequired.classList.add("hidden");
+
+      createForm.classList.remove(
+        "hidden"
+      );
+
+      loginRequired.classList.add(
+        "hidden"
+      );
+
     } else {
-      createForm.classList.add("hidden");
-      loginRequired.classList.remove("hidden");
+
+      createForm.classList.add(
+        "hidden"
+      );
+
+      loginRequired.classList.remove(
+        "hidden"
+      );
+
     }
+
+  }
+
+
+  const ordersLogin =
+    $("ordersLoginRequired");
+
+  if (ordersLogin) {
+
+    if (currentUser) {
+
+      ordersLogin.classList.add(
+        "hidden"
+      );
+
+    } else {
+
+      ordersLogin.classList.remove(
+        "hidden"
+      );
+
+    }
+
   }
 }
 
+
+// =====================================================
+// AUTH PAGE
+// =====================================================
+
 function openAuth() {
+
   openPage("auth");
 
-  const title = $("authTitle");
+
+  const title =
+    $("authTitle");
 
   if (title) {
+
     title.textContent =
       authMode === "login"
         ? "Masuk"
         : "Daftar";
+
   }
+
+
+  const subtitle =
+    $("authSubtitle");
+
+  if (subtitle) {
+
+    subtitle.textContent =
+      authMode === "login"
+        ? "Masuk ke akun Creator kamu."
+        : "Buat akun Creator 60DETIK.";
+
+  }
+
 }
 
+
 function toggleAuthMode() {
-  authMode =
+
+  if (
     authMode === "login"
-      ? "register"
-      : "login";
+  ) {
 
-  const title = $("authTitle");
-  const subtitle = $("authSubtitle");
-  const name = $("authName");
-  const button = $("authSubmit");
-  const toggle = $("authToggle");
+    authMode =
+      "register";
 
-  if (authMode === "login") {
+  } else {
+
+    authMode =
+      "login";
+
+  }
+
+
+  const title =
+    $("authTitle");
+
+  const subtitle =
+    $("authSubtitle");
+
+  const name =
+    $("authName");
+
+  const button =
+    $("authSubmit");
+
+  const toggle =
+    $("authToggle");
+
+
+  if (
+    authMode === "login"
+  ) {
 
     if (title)
-      title.textContent = "Masuk";
+      title.textContent =
+        "Masuk";
 
     if (subtitle)
       subtitle.textContent =
         "Masuk ke akun Creator kamu.";
 
     if (name)
-      name.classList.add("hidden");
+      name.classList.add(
+        "hidden"
+      );
 
     if (button)
-      button.textContent = "Masuk";
+      button.textContent =
+        "Masuk";
 
     if (toggle)
       toggle.textContent =
@@ -176,165 +365,230 @@ function toggleAuthMode() {
   } else {
 
     if (title)
-      title.textContent = "Daftar";
+      title.textContent =
+        "Daftar";
 
     if (subtitle)
       subtitle.textContent =
         "Buat akun Creator 60DETIK.";
 
     if (name)
-      name.classList.remove("hidden");
+      name.classList.remove(
+        "hidden"
+      );
 
     if (button)
-      button.textContent = "Daftar";
+      button.textContent =
+        "Daftar";
 
     if (toggle)
       toggle.textContent =
         "Sudah punya akun? Masuk";
+
   }
+
 }
+
+
+// =====================================================
+// LOGIN / REGISTER
+// =====================================================
 
 async function submitAuth() {
 
+  if (!supabaseReady())
+    return;
+
+
   const email =
-    $("authEmail")?.value.trim();
+    $("authEmail")?.value
+      .trim();
 
   const password =
     $("authPassword")?.value;
 
   const name =
-    $("authName")?.value.trim() ||
+    $("authName")?.value
+      .trim() ||
     "Creator";
 
+
   if (!email || !password) {
+
     alert(
       "Email dan password wajib diisi."
     );
+
     return;
   }
 
-  // ================= REGISTER =================
 
-  if (authMode === "register") {
+  const button =
+    $("authSubmit");
+
+
+  if (button) {
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "Memproses...";
+
+  }
+
+
+  try {
+
+    // REGISTER
+
+    if (
+      authMode === "register"
+    ) {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth
+          .signUp({
+
+            email,
+            password,
+
+            options: {
+
+              data: {
+                name: name
+              }
+
+            }
+
+          });
+
+
+      if (error) {
+
+        alert(
+          "Gagal daftar: " +
+          error.message
+        );
+
+        return;
+      }
+
+
+      if (data?.user) {
+
+        await createProfile(
+          data.user.id,
+          name
+        );
+
+      }
+
+
+      if (!data?.session) {
+
+        alert(
+          "Akun berhasil dibuat.\n\n" +
+          "Jika verifikasi email aktif, " +
+          "silakan verifikasi email lalu masuk."
+        );
+
+
+        authMode =
+          "login";
+
+        toggleAuthMode();
+
+        return;
+      }
+
+
+      currentUser =
+        data.user;
+
+
+      updateUI();
+
+      await loadProfile();
+
+      openPage(
+        "home"
+      );
+
+      return;
+    }
+
+
+    // LOGIN
 
     const {
       data,
       error
-    } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name
-        }
-      }
-    });
+    } =
+      await supabaseClient.auth
+        .signInWithPassword({
+
+          email,
+          password
+
+        });
+
 
     if (error) {
+
       alert(
-        "Gagal daftar: " +
+        "Gagal masuk: " +
         error.message
       );
-      return;
-    }
-
-    if (data.user) {
-      await createProfile(
-        data.user.id,
-        name
-      );
-    }
-
-    if (!data.session) {
-
-      alert(
-        "Akun berhasil dibuat.\n\n" +
-        "Jika verifikasi email aktif, " +
-        "silakan verifikasi email lalu masuk."
-      );
-
-      authMode = "login";
-      toggleAuthMode();
 
       return;
     }
 
-    currentUser = data.user;
+
+    currentUser =
+      data.user;
+
 
     updateUI();
 
     await loadProfile();
 
-    openPage("home");
+    await loadMarketplace();
 
-    return;
-  }
+    await loadMyProducts();
 
+    openPage(
+      "home"
+    );
 
-  // ================= LOGIN =================
+  } catch (error) {
 
-  const {
-    data,
-    error
-  } = await supabaseClient.auth
-    .signInWithPassword({
-      email,
-      password
-    });
+    console.error(error);
 
-  if (error) {
     alert(
-      "Gagal masuk: " +
+      "Terjadi kesalahan: " +
       error.message
     );
-    return;
+
+  } finally {
+
+    if (button) {
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        authMode === "login"
+          ? "Masuk"
+          : "Daftar";
+
+    }
+
   }
 
-  currentUser = data.user;
-
-  updateUI();
-
-  await loadProfile();
-  await loadMarketplace();
-  await loadMyProducts();
-
-  openPage("home");
-}
-
-
-async function createProfile(
-  userId,
-  name
-) {
-
-  const {
-    error
-  } = await supabaseClient
-    .from("profiles")
-    .upsert({
-      id: userId,
-      display_name:
-        name || "Creator"
-    });
-
-  if (error) {
-    console.log(
-      "Profile error:",
-      error.message
-    );
-  }
-}
-
-
-async function logout() {
-
-  await supabaseClient.auth.signOut();
-
-  currentUser = null;
-
-  updateUI();
-
-  openPage("home");
 }
 
 
@@ -342,23 +596,73 @@ async function logout() {
 // PROFILE
 // =====================================================
 
+async function createProfile(
+  userId,
+  name
+) {
+
+  if (!supabaseClient)
+    return;
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("profiles")
+      .upsert({
+
+        id: userId,
+
+        display_name:
+          name || "Creator"
+
+      });
+
+
+  if (error) {
+
+    console.log(
+      "Profile error:",
+      error.message
+    );
+
+  }
+
+}
+
+
 async function loadProfile() {
 
-  if (!currentUser) return;
+  if (
+    !currentUser ||
+    !supabaseClient
+  )
+    return;
+
 
   const {
     data,
     error
-  } = await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .maybeSingle();
+  } =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq(
+        "id",
+        currentUser.id
+      )
+      .maybeSingle();
+
 
   if (error) {
+
     console.log(error);
+
     return;
+
   }
+
 
   const name =
     data?.display_name ||
@@ -366,15 +670,52 @@ async function loadProfile() {
       ?.split("@")[0] ||
     "Creator";
 
+
   const profileInfo =
     $("profileInfo");
 
+
   if (profileInfo) {
+
     profileInfo.textContent =
       name +
       " • " +
-      (currentUser.email || "");
+      (
+        currentUser.email ||
+        ""
+      );
+
   }
+
+}
+
+
+// =====================================================
+// LOGOUT
+// =====================================================
+
+async function logout() {
+
+  if (
+    supabaseClient
+  ) {
+
+    await supabaseClient.auth
+      .signOut();
+
+  }
+
+
+  currentUser =
+    null;
+
+
+  updateUI();
+
+  openPage(
+    "home"
+  );
+
 }
 
 
@@ -386,15 +727,22 @@ async function saveProduct(
   publish
 ) {
 
+  if (!supabaseReady())
+    return;
+
+
   const {
     data: {
       session
     }
-  } = await supabaseClient.auth
-    .getSession();
+  } =
+    await supabaseClient.auth
+      .getSession();
+
 
   const user =
     session?.user;
+
 
   if (!user) {
 
@@ -407,61 +755,106 @@ async function saveProduct(
     return;
   }
 
+
   const skill =
-    $("skill")?.value.trim();
+    $("skill")?.value
+      .trim();
 
   const target =
-    $("target")?.value.trim();
+    $("target")?.value
+      .trim();
 
   const type =
     $("productType")?.value;
 
   const price =
     Number(
-      $("price")?.value || 0
+      $("price")?.value ||
+      0
     );
 
   const title =
-    $("title")?.value.trim();
+    $("title")?.value
+      .trim();
 
   const description =
     $("description")
-      ?.value.trim();
+      ?.value
+      .trim();
+
 
   if (!skill) {
-    alert("Keahlian wajib diisi.");
+
+    alert(
+      "Keahlian wajib diisi."
+    );
+
     return;
   }
+
 
   if (!title) {
-    alert("Judul produk wajib diisi.");
+
+    alert(
+      "Judul produk wajib diisi."
+    );
+
     return;
   }
 
+
   if (price < 0) {
-    alert("Harga tidak valid.");
+
+    alert(
+      "Harga tidak valid."
+    );
+
     return;
   }
+
 
   const {
     data,
     error
-  } = await supabaseClient
-    .from("products")
-    .insert({
-      creator_id: user.id,
-      title: title,
-      skill: skill,
-      target: target,
-      type: type,
-      price: price,
-      description: description,
-      published: publish,
-      sales: 0,
-      reseller_count: 0
-    })
-    .select()
-    .single();
+  } =
+    await supabaseClient
+      .from("products")
+      .insert({
+
+        creator_id:
+          user.id,
+
+        title:
+          title,
+
+        skill:
+          skill,
+
+        target:
+          target,
+
+        type:
+          type,
+
+        price:
+          price,
+
+        description:
+          description,
+
+        published:
+          publish,
+
+        sales:
+          0,
+
+        reseller_count:
+          0
+
+      })
+      .select()
+      .single();
+
 
   if (error) {
 
@@ -470,22 +863,30 @@ async function saveProduct(
       error.message
     );
 
-    console.log(error);
-
     return;
   }
 
-  currentProduct = data;
+
+  currentProduct =
+    data;
+
 
   await loadMarketplace();
+
   await loadMyProducts();
+
 
   showResult(
     data,
     publish
   );
+
 }
 
+
+// =====================================================
+// RESULT
+// =====================================================
 
 function showResult(
   product,
@@ -495,14 +896,19 @@ function showResult(
   const content =
     $("resultContent");
 
+
   if (content) {
 
     content.innerHTML = `
+
       <div class="card">
+
         <h3>
-          ${published
-            ? "🚀 Produk berhasil dipublikasikan!"
-            : "💾 Draft berhasil disimpan!"}
+          ${
+            published
+              ? "🚀 Produk berhasil dipublikasikan!"
+              : "💾 Draft berhasil disimpan!"
+          }
         </h3>
 
         <p>
@@ -521,16 +927,25 @@ function showResult(
         <p>
           Status:
           <strong>
-            ${published
-              ? "Published"
-              : "Draft"}
+            ${
+              published
+                ? "Published"
+                : "Draft"
+            }
           </strong>
         </p>
+
       </div>
+
     `;
+
   }
 
-  openPage("result");
+
+  openPage(
+    "result"
+  );
+
 }
 
 
@@ -540,24 +955,34 @@ function showResult(
 
 async function loadMarketplace() {
 
+  if (!supabaseClient)
+    return;
+
+
   const {
     data,
     error
-  } = await supabaseClient
-    .from("products")
-    .select(`
-      *,
-      profiles (
-        display_name
+  } =
+    await supabaseClient
+      .from("products")
+      .select(`
+        *,
+        profiles (
+          display_name
+        )
+      `)
+      .eq(
+        "published",
+        true
       )
-    `)
-    .eq("published", true)
-    .order(
-      "created_at",
-      {
-        ascending: false
-      }
-    );
+      .order(
+        "created_at",
+        {
+          ascending:
+            false
+        }
+      );
+
 
   if (error) {
 
@@ -569,9 +994,11 @@ async function loadMarketplace() {
     return;
   }
 
+
   renderMarketplace(
     data || []
   );
+
 }
 
 
@@ -582,61 +1009,75 @@ function renderMarketplace(
   const list =
     $("marketplaceList");
 
-  if (!list) return;
+
+  if (!list)
+    return;
+
 
   if (!products.length) {
 
     list.innerHTML = `
+
       <div class="loading">
         Belum ada produk.
       </div>
+
     `;
 
     return;
   }
 
+
   list.innerHTML =
-    products.map(p => `
+    products
+      .map(
+        p => `
 
-      <div
-        class="product-card"
-        onclick="openProduct('${p.id}')"
-      >
+        <div
+          class="product-card"
+          onclick="openProduct('${p.id}')"
+        >
 
-        <div class="product-cover">
-          ${productEmoji(p.type)}
-        </div>
+          <div class="product-cover">
 
-        <div class="product-info">
+            ${productEmoji(p.type)}
 
-          <small>
-            ${escapeHTML(p.type)}
-          </small>
-
-          <h3>
-            ${escapeHTML(p.title)}
-          </h3>
-
-          <p>
-            ${escapeHTML(
-              p.profiles?.display_name ||
-              "Creator"
-            )}
-          </p>
-
-          <div class="product-price">
-            ${rupiah(p.price)}
           </div>
 
-          <small>
-            ${p.sales || 0} terjual
-          </small>
+          <div class="product-info">
+
+            <small>
+              ${escapeHTML(p.type)}
+            </small>
+
+            <h3>
+              ${escapeHTML(p.title)}
+            </h3>
+
+            <p>
+              ${escapeHTML(
+                p.profiles?.display_name ||
+                "Creator"
+              )}
+            </p>
+
+            <div class="product-price">
+              ${rupiah(p.price)}
+            </div>
+
+            <small>
+              ${p.sales || 0}
+              terjual
+            </small>
+
+          </div>
 
         </div>
 
-      </div>
+      `
+      )
+      .join("");
 
-    `).join("");
 }
 
 
@@ -645,25 +1086,31 @@ function searchProducts() {
   const input =
     $("searchInput");
 
+
   const query =
     input?.value
       .toLowerCase()
-      .trim() || "";
+      .trim() ||
+    "";
+
 
   document
     .querySelectorAll(
       ".product-card"
     )
-    .forEach(card => {
+    .forEach(
+      card => {
 
-      card.style.display =
-        card.textContent
-          .toLowerCase()
-          .includes(query)
-          ? ""
-          : "none";
+        card.style.display =
+          card.textContent
+            .toLowerCase()
+            .includes(query)
+            ? ""
+            : "none";
 
-    });
+      }
+    );
+
 }
 
 
@@ -675,19 +1122,28 @@ async function openProduct(
   productId
 ) {
 
+  if (!supabaseReady())
+    return;
+
+
   const {
     data,
     error
-  } = await supabaseClient
-    .from("products")
-    .select(`
-      *,
-      profiles (
-        display_name
+  } =
+    await supabaseClient
+      .from("products")
+      .select(`
+        *,
+        profiles (
+          display_name
+        )
+      `)
+      .eq(
+        "id",
+        productId
       )
-    `)
-    .eq("id", productId)
-    .single();
+      .single();
+
 
   if (error) {
 
@@ -698,12 +1154,18 @@ async function openProduct(
     return;
   }
 
-  currentProduct = data;
+
+  currentProduct =
+    data;
+
 
   const detail =
     $("productDetailContent");
 
-  if (!detail) return;
+
+  if (!detail)
+    return;
+
 
   detail.innerHTML = `
 
@@ -743,7 +1205,8 @@ async function openProduct(
       </p>
 
       <p>
-        ${data.sales || 0} terjual
+        ${data.sales || 0}
+        terjual
       </p>
 
       <button
@@ -764,7 +1227,11 @@ async function openProduct(
 
   `;
 
-  openPage("productDetail");
+
+  openPage(
+    "productDetail"
+  );
+
 }
 
 
@@ -775,21 +1242,31 @@ async function openProduct(
 async function simulateBuy() {
 
   if (!currentProduct) {
+
     alert(
       "Produk belum dipilih."
     );
+
     return;
   }
+
+
+  if (!supabaseReady())
+    return;
+
 
   const {
     data: {
       session
     }
-  } = await supabaseClient.auth
-    .getSession();
+  } =
+    await supabaseClient.auth
+      .getSession();
+
 
   const buyer =
     session?.user;
+
 
   if (!buyer) {
 
@@ -801,6 +1278,7 @@ async function simulateBuy() {
 
     return;
   }
+
 
   if (
     buyer.id ===
@@ -814,54 +1292,65 @@ async function simulateBuy() {
     return;
   }
 
+
   const amount =
     Number(
-      currentProduct.price || 0
+      currentProduct.price ||
+      0
     );
+
 
   const creatorAmount =
     Math.floor(
       amount * 0.70
     );
 
-  const resellerAmount = 0;
+
+  const resellerAmount =
+    0;
+
 
   const platformAmount =
     amount -
     creatorAmount;
 
+
   const {
     data,
     error
-  } = await supabaseClient
-    .from("orders")
-    .insert({
-      product_id:
-        currentProduct.id,
+  } =
+    await supabaseClient
+      .from("orders")
+      .insert({
 
-      buyer_id:
-        buyer.id,
+        product_id:
+          currentProduct.id,
 
-      reseller_id:
-        null,
+        buyer_id:
+          buyer.id,
 
-      amount:
-        amount,
+        reseller_id:
+          null,
 
-      creator_amount:
-        creatorAmount,
+        amount:
+          amount,
 
-      reseller_amount:
-        resellerAmount,
+        creator_amount:
+          creatorAmount,
 
-      platform_amount:
-        platformAmount,
+        reseller_amount:
+          resellerAmount,
 
-      status:
-        "pending"
-    })
-    .select()
-    .single();
+        platform_amount:
+          platformAmount,
+
+        status:
+          "pending"
+
+      })
+      .select()
+      .single();
+
 
   if (error) {
 
@@ -870,210 +1359,342 @@ async function simulateBuy() {
       error.message
     );
 
-    console.log(error);
-
     return;
   }
 
-    await loadOrders();
 
   alert(
+
     "ORDER BERHASIL DIBUAT! 🎉\n\n" +
+
     "Nomor Order:\n" +
+
     data.id +
+
     "\n\n" +
+
     "Total: " +
+
     rupiah(amount) +
+
     "\n\n" +
+
     "Status: MENUNGGU PEMBAYARAN"
+
   );
+
+
+  // Refresh daftar pesanan
+
+  await loadOrders();
+
 }
+
 
 // =====================================================
 // PESANAN SAYA
 // =====================================================
 
 async function loadOrders() {
-  const list = $("ordersList");
-  const loginBox = $("ordersLoginRequired");
 
-  if (!list) return;
+  const list =
+    $("ordersList");
+
+
+  if (!list)
+    return;
+
 
   if (!currentUser) {
-    if (loginBox) {
-      loginBox.classList.remove("hidden");
-    }
 
-    list.innerHTML = "";
+    list.innerHTML = `
+
+      <div class="notice">
+
+        Silakan masuk terlebih dahulu
+        untuk melihat pesanan.
+
+      </div>
+
+    `;
+
+    updateUI();
+
     return;
   }
 
-  if (loginBox) {
-    loginBox.classList.add("hidden");
-  }
+
+  if (!supabaseClient)
+    return;
+
 
   list.innerHTML = `
+
     <div class="loading">
       Memuat pesanan...
     </div>
+
   `;
+
 
   const {
     data,
     error
-  } = await supabaseClient
-    .from("orders")
-    .select(`
-      *,
-      products (
-        title,
-        type
+  } =
+    await supabaseClient
+      .from("orders")
+      .select(`
+        *,
+        products (
+          title,
+          type
+        )
+      `)
+      .eq(
+        "buyer_id",
+        currentUser.id
       )
-    `)
-    .eq("buyer_id", currentUser.id)
-    .order("created_at", {
-      ascending: false
-    });
+      .order(
+        "created_at",
+        {
+          ascending:
+            false
+        }
+      );
+
 
   if (error) {
-    console.log("Orders:", error.message);
+
+    console.log(
+      "Orders:",
+      error.message
+    );
+
 
     list.innerHTML = `
+
       <div class="notice">
+
         Gagal memuat pesanan.
+
+        <br><br>
+
+        ${escapeHTML(
+          error.message
+        )}
+
       </div>
+
     `;
 
     return;
   }
 
-  renderOrders(data || []);
+
+  renderOrders(
+    data || []
+  );
+
 }
 
 
-function renderOrders(orders) {
-  const list = $("ordersList");
+function renderOrders(
+  orders
+) {
 
-  if (!list) return;
+  const list =
+    $("ordersList");
+
+
+  if (!list)
+    return;
+
 
   if (!orders.length) {
+
     list.innerHTML = `
+
       <div class="notice">
         Belum ada pesanan.
       </div>
+
     `;
 
     return;
   }
 
-  list.innerHTML = orders.map(order => {
 
-    const productTitle =
-      order.products?.title ||
-      "Produk 60DETIK";
+  list.innerHTML =
+    orders
+      .map(
+        order => {
 
-    const productType =
-      order.products?.type ||
-      "Produk Digital";
+          const title =
+            order.products?.title ||
+            "Produk 60DETIK";
 
-    const status = String(
-      order.status || "pending"
-    ).toLowerCase();
 
-    let statusText = "MENUNGGU PEMBAYARAN";
-    let statusIcon = "🟡";
+          const type =
+            order.products?.type ||
+            "Produk Digital";
 
-    if (
-      status === "paid" ||
-      status === "dibayar"
-    ) {
-      statusText = "DIBAYAR";
-      statusIcon = "🔵";
-    }
 
-    if (
-      status === "processing" ||
-      status === "diproses"
-    ) {
-      statusText = "DIPROSES";
-      statusIcon = "🔵";
-    }
+          const rawStatus =
+            String(
+              order.status ||
+              "pending"
+            )
+            .toLowerCase();
 
-    if (
-      status === "completed" ||
-      status === "selesai"
-    ) {
-      statusText = "SELESAI";
-      statusIcon = "🟢";
-    }
 
-    if (
-      status === "cancelled" ||
-      status === "dibatalkan"
-    ) {
-      statusText = "DIBATALKAN";
-      statusIcon = "🔴";
-    }
+          let statusText =
+            "MENUNGGU PEMBAYARAN";
 
-    const date = order.created_at
-      ? new Date(order.created_at)
-          .toLocaleString("id-ID")
-      : "-";
+          let statusIcon =
+            "🟡";
 
-    return `
-      <div class="card">
 
-        <div class="product-cover">
-          ${productEmoji(productType)}
-        </div>
+          if (
+            rawStatus === "paid" ||
+            rawStatus === "dibayar"
+          ) {
 
-        <small>
-          ${escapeHTML(productType)}
-        </small>
+            statusText =
+              "DIBAYAR";
 
-        <h3>
-          ${escapeHTML(productTitle)}
-        </h3>
+            statusIcon =
+              "🔵";
 
-        <p>
-          Total:
-          <strong>
-            ${rupiah(order.amount)}
-          </strong>
-        </p>
+          }
 
-        <p>
-          ${statusIcon}
-          <strong>
-            ${statusText}
-          </strong>
-        </p>
 
-        <p>
-          <small>
-            ID Pesanan
-          </small>
-          <br>
+          if (
+            rawStatus === "processing" ||
+            rawStatus === "diproses"
+          ) {
 
-          <span style="
-            font-size:12px;
-            word-break:break-all;
-          ">
-            ${escapeHTML(order.id)}
-          </span>
-        </p>
+            statusText =
+              "DIPROSES";
 
-        <p>
-          <small>
-            ${date}
-          </small>
-        </p>
+            statusIcon =
+              "🔵";
 
-      </div>
-    `;
+          }
 
-  }).join("");
+
+          if (
+            rawStatus === "completed" ||
+            rawStatus === "selesai"
+          ) {
+
+            statusText =
+              "SELESAI";
+
+            statusIcon =
+              "🟢";
+
+          }
+
+
+          if (
+            rawStatus === "cancelled" ||
+            rawStatus === "dibatalkan"
+          ) {
+
+            statusText =
+              "DIBATALKAN";
+
+            statusIcon =
+              "🔴";
+
+          }
+
+
+          const date =
+            order.created_at
+              ? new Date(
+                  order.created_at
+                ).toLocaleString(
+                  "id-ID"
+                )
+              : "-";
+
+
+          return `
+
+            <div class="card">
+
+              <div class="product-cover">
+
+                ${productEmoji(type)}
+
+              </div>
+
+              <small>
+                ${escapeHTML(type)}
+              </small>
+
+              <h3>
+                ${escapeHTML(title)}
+              </h3>
+
+              <p>
+
+                Total:
+
+                <strong>
+                  ${rupiah(order.amount)}
+                </strong>
+
+              </p>
+
+              <p>
+
+                ${statusIcon}
+
+                <strong>
+                  ${statusText}
+                </strong>
+
+              </p>
+
+              <p>
+
+                <small>
+                  ID Pesanan
+                </small>
+
+                <br>
+
+                <span
+                  style="
+                    font-size:12px;
+                    word-break:break-all;
+                  "
+                >
+                  ${escapeHTML(order.id)}
+                </span>
+
+              </p>
+
+              <p>
+
+                <small>
+                  ${date}
+                </small>
+
+              </p>
+
+            </div>
+
+          `;
+
+        }
+      )
+      .join("");
+
 }
+
 
 // =====================================================
 // RESELLER
@@ -1082,21 +1703,31 @@ function renderOrders(orders) {
 async function joinReseller() {
 
   if (!currentProduct) {
+
     alert(
       "Produk belum dipilih."
     );
+
     return;
   }
+
+
+  if (!supabaseReady())
+    return;
+
 
   const {
     data: {
       session
     }
-  } = await supabaseClient.auth
-    .getSession();
+  } =
+    await supabaseClient.auth
+      .getSession();
+
 
   const user =
     session?.user;
+
 
   if (!user) {
 
@@ -1108,6 +1739,7 @@ async function joinReseller() {
 
     return;
   }
+
 
   if (
     user.id ===
@@ -1121,6 +1753,7 @@ async function joinReseller() {
     return;
   }
 
+
   const shareUrl =
     window.location.origin +
     window.location.pathname +
@@ -1133,25 +1766,36 @@ async function joinReseller() {
       user.id
     );
 
+
   try {
 
-    await navigator.clipboard.writeText(
-      shareUrl
-    );
+    await navigator.clipboard
+      .writeText(
+        shareUrl
+      );
+
 
     alert(
+
       "LINK RESELLER BERHASIL DIBUAT! 🚀\n\n" +
+
       "Link sudah disalin.\n\n" +
+
       shareUrl
+
     );
 
   } catch {
 
     alert(
+
       "Link reseller kamu:\n\n" +
       shareUrl
+
     );
+
   }
+
 }
 
 
@@ -1161,25 +1805,32 @@ async function joinReseller() {
 
 async function loadMyProducts() {
 
-  if (!currentUser)
+  if (
+    !currentUser ||
+    !supabaseClient
+  )
     return;
+
 
   const {
     data,
     error
-  } = await supabaseClient
-    .from("products")
-    .select("*")
-    .eq(
-      "creator_id",
-      currentUser.id
-    )
-    .order(
-      "created_at",
-      {
-        ascending: false
-      }
-    );
+  } =
+    await supabaseClient
+      .from("products")
+      .select("*")
+      .eq(
+        "creator_id",
+        currentUser.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending:
+            false
+        }
+      );
+
 
   if (error) {
 
@@ -1191,13 +1842,16 @@ async function loadMyProducts() {
     return;
   }
 
+
   renderMyProducts(
     data || []
   );
 
+
   updateStats(
     data || []
   );
+
 }
 
 
@@ -1208,52 +1862,71 @@ function renderMyProducts(
   const box =
     $("myProducts");
 
-  if (!box) return;
+
+  if (!box)
+    return;
+
 
   if (!products.length) {
 
     box.innerHTML = `
+
       <div class="loading">
         Belum ada produk.
       </div>
+
     `;
 
     return;
   }
 
+
   box.innerHTML =
-    products.map(p => `
+    products
+      .map(
+        p => `
 
-      <div
-        class="product-card"
-        onclick="openProduct('${p.id}')"
-      >
+          <div
+            class="product-card"
+            onclick="openProduct('${p.id}')"
+          >
 
-        <div class="product-cover">
-          ${productEmoji(p.type)}
-        </div>
+            <div class="product-cover">
 
-        <div class="product-info">
+              ${productEmoji(p.type)}
 
-          <small>
-            ${p.published
-              ? "PUBLISHED"
-              : "DRAFT"}
-          </small>
+            </div>
 
-          <h3>
-            ${escapeHTML(p.title)}
-          </h3>
+            <div class="product-info">
 
-          <div class="product-price">
-            ${rupiah(p.price)}
+              <small>
+
+                ${
+                  p.published
+                    ? "PUBLISHED"
+                    : "DRAFT"
+                }
+
+              </small>
+
+              <h3>
+                ${escapeHTML(p.title)}
+              </h3>
+
+              <div class="product-price">
+
+                ${rupiah(p.price)}
+
+              </div>
+
+            </div>
+
           </div>
 
-        </div>
+        `
+      )
+      .join("");
 
-      </div>
-
-    `).join("");
 }
 
 
@@ -1264,30 +1937,131 @@ function updateStats(
   const total =
     products.length;
 
+
   const published =
     products.filter(
       p => p.published
     ).length;
 
+
   const sales =
     products.reduce(
       (sum, p) =>
         sum +
-        Number(p.sales || 0),
+        Number(
+          p.sales || 0
+        ),
       0
     );
 
+
   if ($("statProducts"))
     $("statProducts")
-      .textContent = total;
+      .textContent =
+      total;
+
 
   if ($("statPublished"))
     $("statPublished")
-      .textContent = published;
+      .textContent =
+      published;
+
 
   if ($("statSales"))
     $("statSales")
-      .textContent = sales;
+      .textContent =
+      sales;
+
+}
+
+
+// =====================================================
+// AUTH STATE
+// =====================================================
+
+function setupAuthListener() {
+
+  if (
+    !supabaseClient
+  )
+    return;
+
+
+  supabaseClient.auth
+    .onAuthStateChange(
+      (
+        _event,
+        session
+      ) => {
+
+        currentUser =
+          session?.user ||
+          null;
+
+        updateUI();
+
+      }
+    );
+
+}
+
+
+// =====================================================
+// CHECK USER
+// =====================================================
+
+async function checkUser() {
+
+  if (
+    !supabaseClient
+  ) {
+
+    updateUI();
+
+    return;
+  }
+
+
+  try {
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await supabaseClient.auth
+        .getSession();
+
+
+    currentUser =
+      session?.user ||
+      null;
+
+
+    updateUI();
+
+
+    if (currentUser) {
+
+      await loadProfile();
+
+      await loadMarketplace();
+
+      await loadMyProducts();
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "checkUser:",
+      error
+    );
+
+    updateUI();
+
+  }
+
 }
 
 
@@ -1299,22 +2073,47 @@ document.addEventListener(
   "DOMContentLoaded",
   async () => {
 
-    await checkUser();
+    // Pastikan tombol navigasi
+    // selalu tersedia
 
-    await loadMarketplace();
+    updateUI();
 
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
 
-    const productId =
-      params.get("product");
+    // Coba aktifkan Supabase
 
-    if (productId) {
-      await openProduct(
-        productId
-      );
+    const ready =
+      initSupabase();
+
+
+    if (ready) {
+
+      setupAuthListener();
+
+      await checkUser();
+
+      await loadMarketplace();
+
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+
+      const productId =
+        params.get(
+          "product"
+        );
+
+
+      if (productId) {
+
+        await openProduct(
+          productId
+        );
+
+      }
+
     }
 
   }
