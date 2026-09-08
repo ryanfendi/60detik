@@ -1,30 +1,25 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#08080c">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>60DETIK — Ubah Keahlian Jadi Penghasilan</title>
+  <title>60DETIK</title>
 
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header class="topbar">
+  <div>
+    <div class="logo">60DETIK</div>
+    <div class="tagline">Ubah keahlian menjadi penghasilan.</div>
+  </div>
 
-    <div class="logo">
-        60<span>DETIK</span>
-    </div>
-
-    <button
-        class="profileBtn"
-        onclick="showPage('dashboard')"
-    >
-        👤
-    </button>
-
+  <button id="authButton" class="small-btn" onclick="openAuth()">
+    Masuk
+  </button>
 </header>
 
 
@@ -34,664 +29,415 @@
 
 <section id="home" class="page active">
 
-    <div class="hero">
+  <div class="hero">
 
-        <div class="badge">
-            ⚡ CREATOR ECONOMY
-        </div>
-
-        <h1>
-            PUNYA KEAHLIAN?
-            <br>
-            <span>JADIKAN PRODUK.</span>
-        </h1>
-
-        <p>
-            Ubah pengetahuan dan keahlianmu
-            menjadi produk digital yang bisa dijual.
-        </p>
-
-        <button
-            class="primary big"
-            onclick="showPage('create')"
-        >
-            ⚡ BUAT PRODUK
-        </button>
-
-        <button
-            class="secondary big"
-            onclick="showPage('idea')"
-        >
-            💡 IDEKAN
-        </button>
-
-        <button
-            class="marketButton"
-            onclick="showPage('marketplace')"
-        >
-            🛒 LIHAT MARKETPLACE
-        </button>
-
+    <div class="badge">
+      CREATOR ECONOMY
     </div>
 
+    <h1>
+      Punya keahlian?
+      <span>Jadikan produk.</span>
+    </h1>
 
-    <div class="features">
+    <p>
+      60DETIK membantu kamu mengubah pengetahuan,
+      pengalaman, dan keahlian menjadi produk digital.
+    </p>
 
-        <div class="featureCard">
-            <div class="featureIcon">⚡</div>
-            <b>60 DETIK</b>
-            <p>Mulai dari keahlianmu.</p>
-        </div>
+    <button class="primary-btn" onclick="openPage('create')">
+      + Buat Produk
+    </button>
 
-        <div class="featureCard">
-            <div class="featureIcon">💰</div>
-            <b>JUAL</b>
-            <p>Buat produk digital.</p>
-        </div>
+    <button class="secondary-btn" onclick="openPage('marketplace')">
+      Lihat Marketplace
+    </button>
 
-        <div class="featureCard">
-            <div class="featureIcon">🚀</div>
-            <b>RESELLER</b>
-            <p>Orang lain ikut menjual.</p>
-        </div>
+  </div>
 
+
+  <div class="section-title">
+    Cara kerja
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <b>01</b>
+      <strong>Punya keahlian</strong>
+      <p>Masukkan sesuatu yang kamu kuasai.</p>
     </div>
+
+    <div class="step">
+      <b>02</b>
+      <strong>Buat produk</strong>
+      <p>Ubah keahlian menjadi produk digital.</p>
+    </div>
+
+    <div class="step">
+      <b>03</b>
+      <strong>Jual</strong>
+      <p>Publikasikan produk dan mulai mendapatkan pembeli.</p>
+    </div>
+
+  </div>
 
 </section>
-
 
 
 <!-- ================= MARKETPLACE ================= -->
 
 <section id="marketplace" class="page">
 
-    <div class="pageTitle">
+  <div class="page-header">
+    <h2>Marketplace</h2>
+    <p>Temukan produk digital dari Creator.</p>
+  </div>
 
-        <div class="miniBadge">
-            MARKETPLACE
-        </div>
+  <input
+    id="searchInput"
+    class="input"
+    type="text"
+    placeholder="Cari produk..."
+    oninput="searchProducts()"
+  >
 
-        <h2>
-            🛒 Marketplace
-        </h2>
-
-        <p>
-            Temukan produk digital dari para creator.
-        </p>
-
+  <div id="marketplaceList" class="product-grid">
+    <div class="loading">
+      Memuat produk...
     </div>
-
-
-    <div class="marketSearch">
-
-        <input
-            id="marketSearch"
-            type="search"
-            placeholder="🔎 Cari produk..."
-            oninput="searchMarketplace()"
-        >
-
-    </div>
-
-
-    <div
-        id="marketplaceList"
-        class="marketplaceList"
-    ></div>
+  </div>
 
 </section>
-
 
 
 <!-- ================= PRODUCT DETAIL ================= -->
 
 <section id="productDetail" class="page">
 
-    <button
-        class="backButton"
-        onclick="showPage('marketplace')"
-    >
-        ← Kembali ke Marketplace
-    </button>
+  <button class="back-btn" onclick="openPage('marketplace')">
+    ← Kembali
+  </button>
 
-
-    <div class="detailCover">
-
-        <small>
-            60DETIK DIGITAL PRODUCT
-        </small>
-
-        <h1 id="detailTitle">
-            Produk
-        </h1>
-
-        <p id="detailTarget">
-            Untuk pemula
-        </p>
-
-    </div>
-
-
-    <div class="detailBody">
-
-        <div class="success">
-            ✓ PRODUK DIGITAL
-        </div>
-
-        <h2 id="detailTitle2">
-            Produk
-        </h2>
-
-        <p id="detailDescription">
-            Deskripsi produk.
-        </p>
-
-
-        <div class="included">
-
-            <div>✓ Materi utama</div>
-            <div>✓ Langkah praktis</div>
-            <div>✓ Bonus checklist</div>
-
-        </div>
-
-
-        <div class="price">
-
-            <small>
-                HARGA
-            </small>
-
-            <strong id="detailPrice">
-                Rp29.000
-            </strong>
-
-        </div>
-
-
-        <button
-            class="primary full"
-            onclick="simulateBuy()"
-        >
-            💳 BELI PRODUK
-        </button>
-
-
-        <div class="resellerBox">
-
-            <div class="resellerIcon">
-                🚀
-            </div>
-
-            <h3>
-                Jual Produk Ini
-            </h3>
-
-            <p>
-                Bagikan produk ini dan dapatkan
-                komisi dari penjualan yang kamu hasilkan.
-            </p>
-
-            <div class="commission">
-                KOMISI SIMULASI
-                <strong>20%</strong>
-            </div>
-
-            <button
-                class="secondary full"
-                onclick="joinReseller()"
-            >
-                🚀 JUAL PRODUK INI
-            </button>
-
-        </div>
-
-    </div>
+  <div id="productDetailContent"></div>
 
 </section>
-
-
-
-<!-- ================= DASHBOARD ================= -->
-
-<section id="dashboard" class="page">
-
-    <div class="pageTitle">
-
-        <div class="miniBadge">
-            CREATOR STUDIO
-        </div>
-
-        <h2>
-            Creator Studio
-        </h2>
-
-        <p>
-            Kelola produk digitalmu.
-        </p>
-
-    </div>
-
-
-    <div class="stats">
-
-        <div class="stat">
-            <span>Pendapatan</span>
-            <strong id="income">Rp0</strong>
-        </div>
-
-        <div class="stat">
-            <span>Produk</span>
-            <strong id="productCount">0</strong>
-        </div>
-
-        <div class="stat">
-            <span>Terjual</span>
-            <strong id="salesCount">0</strong>
-        </div>
-
-    </div>
-
-
-    <button
-        class="primary full"
-        onclick="showPage('create')"
-    >
-        + BUAT PRODUK
-    </button>
-
-
-    <button
-        class="secondary full"
-        onclick="showPage('marketplace')"
-    >
-        🛒 BUKA MARKETPLACE
-    </button>
-
-
-    <div class="sectionTitle">
-        Produk Saya
-    </div>
-
-
-    <div id="productList">
-
-        <div class="empty">
-            <div class="emptyIcon">📦</div>
-
-            <h3>
-                Belum ada produk
-            </h3>
-
-            <p>
-                Buat produk pertamamu sekarang.
-            </p>
-        </div>
-
-    </div>
-
-</section>
-
 
 
 <!-- ================= CREATE ================= -->
 
 <section id="create" class="page">
 
-    <div class="pageTitle">
+  <div class="page-header">
+    <h2>Buat Produk</h2>
+    <p>Ubah keahlian kamu menjadi produk.</p>
+  </div>
 
-        <div class="miniBadge">
-            CREATE
-        </div>
+  <div id="loginRequired" class="notice hidden">
 
-        <h2>
-            ⚡ Buat Produk
-        </h2>
+    <h3>Masuk terlebih dahulu</h3>
 
-        <p>
-            Cukup ceritakan apa yang kamu bisa.
-        </p>
+    <p>
+      Kamu harus memiliki akun Creator
+      sebelum membuat produk.
+    </p>
 
+    <button class="primary-btn" onclick="openAuth()">
+      Masuk / Daftar
+    </button>
+
+  </div>
+
+
+  <div id="createForm">
+
+    <label>Keahlian kamu</label>
+
+    <input
+      id="skill"
+      class="input"
+      placeholder="Contoh: desain Canva"
+    >
+
+
+    <label>Siapa yang membutuhkan?</label>
+
+    <input
+      id="target"
+      class="input"
+      placeholder="Contoh: UMKM pemula"
+    >
+
+
+    <label>Jenis produk</label>
+
+    <select id="productType" class="input">
+
+      <option value="Ebook">
+        Ebook
+      </option>
+
+      <option value="Panduan">
+        Panduan
+      </option>
+
+      <option value="Checklist">
+        Checklist
+      </option>
+
+      <option value="Template">
+        Template
+      </option>
+
+      <option value="Worksheet">
+        Worksheet
+      </option>
+
+    </select>
+
+
+    <label>Harga produk</label>
+
+    <input
+      id="price"
+      class="input"
+      type="number"
+      placeholder="29000"
+    >
+
+
+    <label>Judul produk</label>
+
+    <input
+      id="title"
+      class="input"
+      placeholder="Judul produk"
+    >
+
+
+    <label>Deskripsi</label>
+
+    <textarea
+      id="description"
+      class="input textarea"
+      placeholder="Jelaskan produk kamu..."
+    ></textarea>
+
+
+    <button
+      class="primary-btn full"
+      onclick="saveProduct(false)"
+    >
+      Simpan Draft
+    </button>
+
+
+    <button
+      class="secondary-btn full"
+      onclick="saveProduct(true)"
+    >
+      Publikasikan Produk
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- ================= DASHBOARD ================= -->
+
+<section id="dashboard" class="page">
+
+  <div class="page-header">
+
+    <h2>Creator Studio</h2>
+
+    <p id="profileInfo">
+      Akun Creator
+    </p>
+
+  </div>
+
+
+  <div class="stats">
+
+    <div class="stat">
+      <span id="statProducts">0</span>
+      <small>Produk</small>
     </div>
 
-
-    <div class="card">
-
-        <label for="skill">
-            Apa yang kamu bisa?
-        </label>
-
-        <textarea
-            id="skill"
-            placeholder="Contoh: Saya bisa membuat kue..."
-        ></textarea>
-
-
-        <label for="target">
-            Siapa yang membutuhkan?
-        </label>
-
-        <input
-            id="target"
-            type="text"
-            placeholder="Contoh: pemula"
-        >
-
-
-        <label for="productType">
-            Jenis produk
-        </label>
-
-        <select id="productType">
-
-            <option value="Ebook">Ebook</option>
-            <option value="Panduan">Panduan</option>
-            <option value="Checklist">Checklist</option>
-            <option value="Template">Template</option>
-            <option value="Worksheet">Worksheet</option>
-
-        </select>
-
-
-        <label for="productPrice">
-            Harga
-        </label>
-
-        <input
-            id="productPrice"
-            type="number"
-            value="29000"
-            min="0"
-        >
-
-
-        <button
-            class="primary full"
-            onclick="generateProduct()"
-        >
-            ⚡ BUAT SEKARANG
-        </button>
-
+    <div class="stat">
+      <span id="statPublished">0</span>
+      <small>Published</small>
     </div>
+
+    <div class="stat">
+      <span id="statSales">0</span>
+      <small>Penjualan</small>
+    </div>
+
+  </div>
+
+
+  <button
+    class="primary-btn full"
+    onclick="openPage('create')"
+  >
+    + Buat Produk
+  </button>
+
+
+  <div class="section-title">
+    Produk Saya
+  </div>
+
+  <div id="myProducts" class="product-grid"></div>
 
 </section>
 
 
+<!-- ================= AUTH ================= -->
 
-<!-- ================= IDEA ================= -->
+<section id="auth" class="page">
 
-<section id="idea" class="page">
+  <div class="auth-box">
 
-    <div class="pageTitle">
-
-        <div class="miniBadge">
-            IDEKAN
-        </div>
-
-        <h2>
-            💡 IDEKAN
-        </h2>
-
-        <p>
-            Tidak tahu produk apa yang harus dibuat?
-        </p>
-
+    <div class="logo center">
+      60DETIK
     </div>
 
+    <h2 id="authTitle">
+      Masuk
+    </h2>
 
-    <div class="card">
-
-        <label for="ideaSkill">
-            Saya bisa...
-        </label>
-
-        <textarea
-            id="ideaSkill"
-            placeholder="Contoh: memasak"
-        ></textarea>
+    <p id="authSubtitle">
+      Masuk ke akun Creator kamu.
+    </p>
 
 
-        <button
-            class="primary full"
-            onclick="generateIdeas()"
-        >
-            💡 CARI IDE
-        </button>
-
-    </div>
+    <input
+      id="authName"
+      class="input hidden"
+      placeholder="Nama kamu"
+    >
 
 
-    <div
-        id="ideaResults"
-        class="ideaResults"
-    ></div>
+    <input
+      id="authEmail"
+      class="input"
+      type="email"
+      placeholder="Email"
+    >
+
+
+    <input
+      id="authPassword"
+      class="input"
+      type="password"
+      placeholder="Password"
+    >
+
+
+    <button
+      id="authSubmit"
+      class="primary-btn full"
+      onclick="submitAuth()"
+    >
+      Masuk
+    </button>
+
+
+    <button
+      class="text-btn"
+      onclick="toggleAuthMode()"
+      id="authToggle"
+    >
+      Belum punya akun? Daftar
+    </button>
+
+
+    <button
+      class="back-btn"
+      onclick="openPage('home')"
+    >
+      ← Kembali
+    </button>
+
+  </div>
 
 </section>
-
 
 
 <!-- ================= RESULT ================= -->
 
 <section id="result" class="page">
 
-    <div class="pageTitle">
+  <div class="page-header">
 
-        <div class="miniBadge">
-            PREVIEW
-        </div>
+    <h2>Produk berhasil dibuat</h2>
 
-        <h2>
-            🎉 Produk Kamu
-        </h2>
+    <p>
+      Produk kamu sudah tersimpan di 60DETIK.
+    </p>
 
-        <p>
-            Preview sebelum diterbitkan.
-        </p>
-
-    </div>
+  </div>
 
 
-    <div class="productPreview">
-
-        <div class="cover">
-
-            <small>
-                60DETIK
-            </small>
-
-            <h1 id="resultTitle">
-                Produk
-            </h1>
-
-            <p id="resultTarget">
-                Untuk pemula
-            </p>
-
-            <div class="coverBottom">
-                DIGITAL PRODUCT
-            </div>
-
-        </div>
+  <div id="resultContent"></div>
 
 
-        <div class="productBody">
-
-            <div class="success">
-                ✓ SIAP DITERBITKAN
-            </div>
-
-            <h2 id="resultTitle2">
-                Produk
-            </h2>
-
-            <p id="resultDescription">
-                Deskripsi produk.
-            </p>
+  <button
+    class="primary-btn full"
+    onclick="openPage('dashboard')"
+  >
+    Ke Creator Studio
+  </button>
 
 
-            <div class="included">
-
-                <div>✓ Materi utama</div>
-                <div>✓ Langkah praktis</div>
-                <div>✓ Bonus checklist</div>
-
-            </div>
-
-
-            <div class="price">
-
-                <small>HARGA</small>
-
-                <strong id="resultPrice">
-                    Rp29.000
-                </strong>
-
-            </div>
-
-
-            <button
-                class="primary full"
-                onclick="publishProduct()"
-            >
-                🚀 TERBITKAN
-            </button>
-
-
-            <button
-                class="secondary full"
-                onclick="showPage('create')"
-            >
-                ✏️ EDIT
-            </button>
-
-        </div>
-
-    </div>
+  <button
+    class="secondary-btn full"
+    onclick="openPage('marketplace')"
+  >
+    Lihat Marketplace
+  </button>
 
 </section>
 
-
-
-<!-- ================= PUBLISHED ================= -->
-
-<section id="published" class="page">
-
-    <div class="publishedCard">
-
-        <div class="check">
-            ✓
-        </div>
-
-        <div class="miniBadge">
-            PUBLISHED
-        </div>
-
-        <h2>
-            Produk Terbit!
-        </h2>
-
-        <p>
-            Produkmu sekarang muncul di marketplace.
-        </p>
-
-
-        <div
-            id="publishedProductName"
-            class="publishedProductName"
-        >
-            Produk
-        </div>
-
-
-        <div
-            id="productLink"
-            class="link"
-        >
-            -
-        </div>
-
-
-        <button
-            class="primary full"
-            onclick="copyProductLink()"
-        >
-            🔗 SALIN LINK
-        </button>
-
-
-        <button
-            class="secondary full"
-            onclick="shareProduct()"
-        >
-            📲 BAGIKAN
-        </button>
-
-
-        <button
-            class="secondary full"
-            onclick="showPage('marketplace')"
-        >
-            🛒 LIHAT MARKETPLACE
-        </button>
-
-
-        <button
-            class="textButton full"
-            onclick="showPage('dashboard')"
-        >
-            ← KEMBALI KE PRODUK
-        </button>
-
-    </div>
-
-</section>
-
+</main>
 
 
 <!-- ================= BOTTOM NAV ================= -->
 
-<nav class="bottomNav">
+<nav class="bottom-nav">
 
-    <button
-        id="navHome"
-        class="navActive"
-        onclick="showPage('home')"
-    >
-        <span>🏠</span>
-        <small>Home</small>
-    </button>
+  <button onclick="openPage('home')">
+    <span>⌂</span>
+    Home
+  </button>
 
+  <button onclick="openPage('marketplace')">
+    <span>◈</span>
+    Market
+  </button>
 
-    <button
-        id="navCreate"
-        onclick="showPage('create')"
-    >
-        <span>⚡</span>
-        <small>Buat</small>
-    </button>
+  <button onclick="openPage('create')">
+    <span>＋</span>
+    Buat
+  </button>
 
-
-    <button
-        id="navIdea"
-        onclick="showPage('idea')"
-    >
-        <span>💡</span>
-        <small>Idekan</small>
-    </button>
-
-
-    <button
-        id="navMarketplace"
-        onclick="showPage('marketplace')"
-    >
-        <span>🛒</span>
-        <small>Market</small>
-    </button>
+  <button onclick="openPage('dashboard')">
+    <span>◎</span>
+    Saya
+  </button>
 
 </nav>
 
 
+<!-- SUPABASE -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="app.js"></script>
 
 </body>
-    </html>
+</html>
