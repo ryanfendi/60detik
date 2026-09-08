@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#0b0b0f">
+
+    <title>60DETIK — Ubah Keahlian Jadi Penghasilan</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="logo">
+        60<span>DETIK</span>
+    </div>
+
+    <button
+        class="profileBtn"
+        onclick="showPage('dashboard')"
+        aria-label="Creator Studio"
+    >
+        👤
+    </button>
+
+</header>
+
+
+<main>
+
+<!-- ================= HOME ================= -->
+
+<section id="home" class="page active">
+
+    <div class="hero">
+
+        <div class="badge">
+            ⚡ CREATOR ECONOMY
+        </div>
+
+        <h1>
+            PUNYA KEAHLIAN?
+            <br>
+            <span>JADIKAN PRODUK.</span>
+        </h1>
+
+        <p>
+            Ubah pengetahuan dan keahlianmu
+            menjadi produk digital yang bisa dijual.
+        </p>
+
+        <button
+            class="primary big"
+            onclick="showPage('create')"
+        >
+            ⚡ BUAT PRODUK
+        </button>
+
+        <button
+            class="secondary big"
+            onclick="showPage('idea')"
+        >
+            💡 IDEKAN
+        </button>
+
+    </div>
+
+
+    <div class="features">
+
+        <div class="featureCard">
+            <div class="featureIcon">⚡</div>
+
+            <b>60 DETIK</b>
+
+            <p>
+                Mulai dari keahlianmu.
+            </p>
+        </div>
+
+
+        <div class="featureCard">
+            <div class="featureIcon">💰</div>
+
+            <b>JUAL</b>
+
+            <p>
+                Buat produk digital.
+            </p>
+        </div>
+
+
+        <div class="featureCard">
+            <div class="featureIcon">🚀</div>
+
+            <b>RESELLER</b>
+
+            <p>
+                Biarkan orang lain ikut menjual.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= DASHBOARD ================= -->
+
+<section id="dashboard" class="page">
+
+    <div class="pageTitle">
+
+        <div class="miniBadge">
+            CREATOR STUDIO
+        </div>
+
+        <h2>
+            Creator Studio
+        </h2>
+
+        <p>
+            Kelola produk digitalmu.
+        </p>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+            <span>Pendapatan</span>
+
+            <strong id="income">
+                Rp0
+            </strong>
+        </div>
+
+
+        <div class="stat">
+            <span>Produk</span>
+
+            <strong id="productCount">
+                0
+            </strong>
+        </div>
+
+
+        <div class="stat">
+            <span>Terjual</span>
+
+            <strong id="salesCount">
+                0
+            </strong>
+        </div>
+
+    </div>
+
+
+    <button
+        class="primary full"
+        onclick="showPage('create')"
+    >
+        + BUAT PRODUK
+    </button>
+
+
+    <div class="sectionTitle">
+        Produk Saya
+    </div>
+
+
+    <div id="productList">
+
+        <div class="empty">
+
+            <div class="emptyIcon">
+                📦
+            </div>
+
+            <h3>
+                Belum ada produk
+            </h3>
+
+            <p>
+                Buat produk pertamamu sekarang.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= CREATE ================= -->
+
+<section id="create" class="page">
+
+    <div class="pageTitle">
+
+        <div class="miniBadge">
+            CREATE
+        </div>
+
+        <h2>
+            ⚡ Buat Produk
+        </h2>
+
+        <p>
+            Cukup ceritakan apa yang kamu bisa.
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <label for="skill">
+            Apa yang kamu bisa?
+        </label>
+
+        <textarea
+            id="skill"
+            placeholder="Contoh: Saya bisa membuat kue..."
+        ></textarea>
+
+
+        <label for="target">
+            Siapa yang membutuhkan?
+        </label>
+
+        <input
+            id="target"
+            type="text"
+            placeholder="Contoh: pemula"
+        >
+
+
+        <label for="productType">
+            Jenis produk
+        </label>
+
+        <select id="productType">
+
+            <option value="Ebook">
+                Ebook
+            </option>
+
+            <option value="Panduan">
+                Panduan
+            </option>
+
+            <option value="Checklist">
+                Checklist
+            </option>
+
+            <option value="Template">
+                Template
+            </option>
+
+            <option value="Worksheet">
+                Worksheet
+            </option>
+
+        </select>
+
+
+        <label for="productPrice">
+            Harga
+        </label>
+
+        <input
+            id="productPrice"
+            type="number"
+            value="29000"
+            min="0"
+        >
+
+
+        <button
+            id="generateButton"
+            class="primary full"
+            onclick="generateProduct()"
+        >
+            ⚡ BUAT SEKARANG
+        </button>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= IDEA ================= -->
+
+<section id="idea" class="page">
+
+    <div class="pageTitle">
+
+        <div class="miniBadge">
+            IDEKAN
+        </div>
+
+        <h2>
+            💡 IDEKAN
+        </h2>
+
+        <p>
+            Tidak tahu produk apa yang harus dibuat?
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <label for="ideaSkill">
+            Saya bisa...
+        </label>
+
+        <textarea
+            id="ideaSkill"
+            placeholder="Contoh: memasak"
+        ></textarea>
+
+
+        <button
+            class="primary full"
+            onclick="generateIdeas()"
+        >
+            💡 CARI IDE
+        </button>
+
+    </div>
+
+
+    <div
+        id="ideaResults"
+        class="ideaResults"
+    ></div>
+
+</section>
+
+
+
+<!-- ================= RESULT ================= -->
+
+<section id="result" class="page">
+
+    <div class="pageTitle">
+
+        <div class="miniBadge">
+            PREVIEW
+        </div>
+
+        <h2>
+            🎉 Produk Kamu
+        </h2>
+
+        <p>
+            Preview sebelum diterbitkan.
+        </p>
+
+    </div>
+
+
+    <div class="productPreview">
+
+        <div class="cover">
+
+            <small>
+                60DETIK
+            </small>
+
+            <h1 id="resultTitle">
+                Produk
+            </h1>
+
+            <p id="resultTarget">
+                Untuk pemula
+            </p>
+
+            <div class="coverBottom">
+                DIGITAL PRODUCT
+            </div>
+
+        </div>
+
+
+        <div class="productBody">
+
+            <div class="success">
+                ✓ SIAP DITERBITKAN
+            </div>
+
+            <h2 id="resultTitle2">
+                Produk
+            </h2>
+
+            <p id="resultDescription">
+                Deskripsi produk.
+            </p>
+
+
+            <div class="included">
+
+                <div>
+                    ✓ Materi utama
+                </div>
+
+                <div>
+                    ✓ Langkah praktis
+                </div>
+
+                <div>
+                    ✓ Bonus checklist
+                </div>
+
+            </div>
+
+
+            <div class="price">
+
+                <small>
+                    HARGA
+                </small>
+
+                <strong id="resultPrice">
+                    Rp29.000
+                </strong>
+
+            </div>
+
+
+            <button
+                class="primary full"
+                onclick="publishProduct()"
+            >
+                🚀 TERBITKAN
+            </button>
+
+
+            <button
+                class="secondary full"
+                onclick="showPage('create')"
+            >
+                ✏️ EDIT
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= PUBLISHED ================= -->
+
+<section id="published" class="page">
+
+    <div class="publishedCard">
+
+        <div class="check">
+            ✓
+        </div>
+
+        <div class="miniBadge">
+            PUBLISHED
+        </div>
+
+        <h2>
+            Produk Terbit!
+        </h2>
+
+        <p>
+            Produkmu sekarang memiliki halaman
+            penjualan.
+        </p>
+
+
+        <div
+            id="publishedProductName"
+            class="publishedProductName"
+        >
+            Produk
+        </div>
+
+
+        <div
+            id="productLink"
+            class="link"
+        >
+            60detik.app/p/000001
+        </div>
+
+
+        <button
+            class="primary full"
+            onclick="copyProductLink()"
+        >
+            🔗 SALIN LINK
+        </button>
+
+
+        <button
+            class="secondary full"
+            onclick="shareProduct()"
+        >
+            📲 BAGIKAN
+        </button>
+
+
+        <button
+            class="textButton full"
+            onclick="showPage('dashboard')"
+        >
+            ← KEMBALI KE PRODUK
+        </button>
+
+    </div>
+
+</section>
+
+</main>
+
+
+
+<!-- ================= BOTTOM NAV ================= -->
+
+<nav class="bottomNav">
+
+    <button
+        id="navHome"
+        class="navActive"
+        onclick="showPage('home')"
+    >
+        <span>🏠</span>
+        <small>Home</small>
+    </button>
+
+
+    <button
+        id="navCreate"
+        onclick="showPage('create')"
+    >
+        <span>⚡</span>
+        <small>Buat</small>
+    </button>
+
+
+    <button
+        id="navIdea"
+        onclick="showPage('idea')"
+    >
+        <span>💡</span>
+        <small>Idekan</small>
+    </button>
+
+
+    <button
+        id="navDashboard"
+        onclick="showPage('dashboard')"
+    >
+        <span>📦</span>
+        <small>Produk</small>
+    </button>
+
+</nav>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
