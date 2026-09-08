@@ -1,6 +1,5 @@
 // =====================================================
-// 60DETIK V0.5
-// Supabase + Products + Marketplace + Orders
+// 60DETIK V0.5 - FINAL COMPATIBLE
 // =====================================================
 
 const SUPABASE_URL = "https://crbobpsgaryhqcinfeow.supabase.co";
@@ -16,6 +15,11 @@ let currentProduct = null;
 let authMode = "login";
 
 const $ = (id) => document.getElementById(id);
+
+
+// =====================================================
+// HELPERS
+// =====================================================
 
 function rupiah(value) {
   return new Intl.NumberFormat("id-ID", {
@@ -34,163 +38,16 @@ function escapeHTML(value) {
     .replace(/'/g, "&#039;");
 }
 
+function productEmoji(type) {
+  const t = String(type || "").toLowerCase();
 
-// =====================================================
-// AUTH
-// =====================================================
+  if (t.includes("ebook")) return "📘";
+  if (t.includes("panduan")) return "📚";
+  if (t.includes("checklist")) return "✅";
+  if (t.includes("template")) return "📄";
+  if (t.includes("worksheet")) return "📝";
 
-async function checkUser() {
-  const { data, error } = await supabaseClient.auth.getSession();
-
-  if (error) {
-    console.log(error);
-    currentUser = null;
-    updateUI();
-    return;
-  }
-
-  currentUser = data.session?.user || null;
-
-  updateUI();
-
-  if (currentUser) {
-    await loadProfile();
-    await loadMarketplace();
-    await loadMyProducts();
-  }
-}
-
-supabaseClient.auth.onAuthStateChange((_event, session) => {
-  currentUser = session?.user || null;
-  updateUI();
-});
-
-function updateUI() {
-  const authBtn = $("authBtn");
-
-  if (authBtn) {
-    authBtn.textContent = currentUser ? "Keluar" : "Masuk";
-    authBtn.onclick = currentUser ? logout : openAuth;
-  }
-}
-
-function openAuth() {
-  openPage("authPage");
-}
-
-function toggleAuthMode() {
-  authMode = authMode === "login" ? "register" : "login";
-
-  const title = $("authTitle");
-  const button = $("authSubmit");
-  const switchText = $("authSwitch");
-
-  if (title) {
-    title.textContent =
-      authMode === "login"
-        ? "Masuk ke 60DETIK"
-        : "Buat akun 60DETIK";
-  }
-
-  if (button) {
-    button.textContent =
-      authMode === "login"
-        ? "Masuk"
-        : "Daftar";
-  }
-
-  if (switchText) {
-    switchText.innerHTML =
-      authMode === "login"
-        ? 'Belum punya akun? <button type="button" onclick="toggleAuthMode()">Daftar</button>'
-        : 'Sudah punya akun? <button type="button" onclick="toggleAuthMode()">Masuk</button>';
-  }
-}
-
-async function submitAuth(event) {
-  event.preventDefault();
-
-  const email = $("authEmail")?.value.trim();
-  const password = $("authPassword")?.value;
-  const name = $("authName")?.value.trim() || "Creator";
-
-  if (!email || !password) {
-    alert("Email dan password wajib diisi.");
-    return;
-  }
-
-  if (authMode === "register") {
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name
-        }
-      }
-    });
-
-    if (error) {
-      alert("Gagal daftar: " + error.message);
-      return;
-    }
-
-    if (data.user) {
-      await createProfile(data.user.id, name);
-    }
-
-    alert(
-      "Pendaftaran berhasil. Jika diminta verifikasi email, cek email kamu."
-    );
-
-    if (data.session) {
-      currentUser = data.user;
-      updateUI();
-      openPage("homePage");
-    }
-
-    return;
-  }
-
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-  if (error) {
-    alert("Gagal masuk: " + error.message);
-    return;
-  }
-
-  currentUser = data.user;
-  updateUI();
-
-  await loadProfile();
-  await loadMarketplace();
-  await loadMyProducts();
-
-  openPage("homePage");
-}
-
-async function createProfile(userId, name) {
-  const { error } = await supabaseClient
-    .from("profiles")
-    .upsert({
-      id: userId,
-      display_name: name || "Creator"
-    });
-
-  if (error) {
-    console.log("Profile:", error.message);
-  }
-}
-
-async function logout() {
-  await supabaseClient.auth.signOut();
-  currentUser = null;
-  updateUI();
-  openPage("homePage");
+  return "💡";
 }
 
 
@@ -201,16 +58,320 @@ async function logout() {
 function openPage(pageId) {
   document
     .querySelectorAll(".page")
-    .forEach((page) => page.classList.remove("active"));
+    .forEach(page => {
+      page.classList.remove("active");
+    });
 
   const page = $(pageId);
 
   if (page) {
     page.classList.add("active");
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
+    window.scrollTo(0, 0);
+  }
+
+  updateUI();
+}
+
+
+// =====================================================
+// AUTH
+// =====================================================
+
+async function checkUser() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  currentUser = session?.user || null;
+
+  updateUI();
+
+  if (currentUser) {
+    await loadProfile();
+    await loadMarketplace();
+    await loadMyProducts();
+  }
+}
+
+supabaseClient.auth.onAuthStateChange(
+  (_event, session) => {
+    currentUser = session?.user || null;
+    updateUI();
+  }
+);
+
+function updateUI() {
+  const button = $("authButton");
+
+  if (!button) return;
+
+  if (currentUser) {
+    button.textContent = "Keluar";
+    button.onclick = logout;
+  } else {
+    button.textContent = "Masuk";
+    button.onclick = openAuth;
+  }
+
+  const createForm = $("createForm");
+  const loginRequired = $("loginRequired");
+
+  if (createForm && loginRequired) {
+    if (currentUser) {
+      createForm.classList.remove("hidden");
+      loginRequired.classList.add("hidden");
+    } else {
+      createForm.classList.add("hidden");
+      loginRequired.classList.remove("hidden");
+    }
+  }
+}
+
+function openAuth() {
+  openPage("auth");
+
+  const title = $("authTitle");
+
+  if (title) {
+    title.textContent =
+      authMode === "login"
+        ? "Masuk"
+        : "Daftar";
+  }
+}
+
+function toggleAuthMode() {
+  authMode =
+    authMode === "login"
+      ? "register"
+      : "login";
+
+  const title = $("authTitle");
+  const subtitle = $("authSubtitle");
+  const name = $("authName");
+  const button = $("authSubmit");
+  const toggle = $("authToggle");
+
+  if (authMode === "login") {
+
+    if (title)
+      title.textContent = "Masuk";
+
+    if (subtitle)
+      subtitle.textContent =
+        "Masuk ke akun Creator kamu.";
+
+    if (name)
+      name.classList.add("hidden");
+
+    if (button)
+      button.textContent = "Masuk";
+
+    if (toggle)
+      toggle.textContent =
+        "Belum punya akun? Daftar";
+
+  } else {
+
+    if (title)
+      title.textContent = "Daftar";
+
+    if (subtitle)
+      subtitle.textContent =
+        "Buat akun Creator 60DETIK.";
+
+    if (name)
+      name.classList.remove("hidden");
+
+    if (button)
+      button.textContent = "Daftar";
+
+    if (toggle)
+      toggle.textContent =
+        "Sudah punya akun? Masuk";
+  }
+}
+
+async function submitAuth() {
+
+  const email =
+    $("authEmail")?.value.trim();
+
+  const password =
+    $("authPassword")?.value;
+
+  const name =
+    $("authName")?.value.trim() ||
+    "Creator";
+
+  if (!email || !password) {
+    alert(
+      "Email dan password wajib diisi."
+    );
+    return;
+  }
+
+  // ================= REGISTER =================
+
+  if (authMode === "register") {
+
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name
+        }
+      }
     });
+
+    if (error) {
+      alert(
+        "Gagal daftar: " +
+        error.message
+      );
+      return;
+    }
+
+    if (data.user) {
+      await createProfile(
+        data.user.id,
+        name
+      );
+    }
+
+    if (!data.session) {
+
+      alert(
+        "Akun berhasil dibuat.\n\n" +
+        "Jika verifikasi email aktif, " +
+        "silakan verifikasi email lalu masuk."
+      );
+
+      authMode = "login";
+      toggleAuthMode();
+
+      return;
+    }
+
+    currentUser = data.user;
+
+    updateUI();
+
+    await loadProfile();
+
+    openPage("home");
+
+    return;
+  }
+
+
+  // ================= LOGIN =================
+
+  const {
+    data,
+    error
+  } = await supabaseClient.auth
+    .signInWithPassword({
+      email,
+      password
+    });
+
+  if (error) {
+    alert(
+      "Gagal masuk: " +
+      error.message
+    );
+    return;
+  }
+
+  currentUser = data.user;
+
+  updateUI();
+
+  await loadProfile();
+  await loadMarketplace();
+  await loadMyProducts();
+
+  openPage("home");
+}
+
+
+async function createProfile(
+  userId,
+  name
+) {
+
+  const {
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .upsert({
+      id: userId,
+      display_name:
+        name || "Creator"
+    });
+
+  if (error) {
+    console.log(
+      "Profile error:",
+      error.message
+    );
+  }
+}
+
+
+async function logout() {
+
+  await supabaseClient.auth.signOut();
+
+  currentUser = null;
+
+  updateUI();
+
+  openPage("home");
+}
+
+
+// =====================================================
+// PROFILE
+// =====================================================
+
+async function loadProfile() {
+
+  if (!currentUser) return;
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    console.log(error);
+    return;
+  }
+
+  const name =
+    data?.display_name ||
+    currentUser.email
+      ?.split("@")[0] ||
+    "Creator";
+
+  const profileInfo =
+    $("profileInfo");
+
+  if (profileInfo) {
+    profileInfo.textContent =
+      name +
+      " • " +
+      (currentUser.email || "");
   }
 }
 
@@ -219,34 +380,59 @@ function openPage(pageId) {
 // CREATE PRODUCT
 // =====================================================
 
-async function saveProduct(publish) {
-  const {
-    data: { session }
-  } = await supabaseClient.auth.getSession();
+async function saveProduct(
+  publish
+) {
 
-  const user = session?.user;
+  const {
+    data: {
+      session
+    }
+  } = await supabaseClient.auth
+    .getSession();
+
+  const user =
+    session?.user;
 
   if (!user) {
-    alert("Sesi login tidak ditemukan. Silakan masuk ulang.");
+
+    alert(
+      "Silakan masuk terlebih dahulu."
+    );
+
     openAuth();
+
     return;
   }
 
-  const title = $("productTitle")?.value.trim();
-  const skill = $("productSkill")?.value.trim();
-  const target = $("productTarget")?.value.trim();
-  const type = $("productType")?.value;
-  const price = Number($("productPrice")?.value || 0);
+  const skill =
+    $("skill")?.value.trim();
+
+  const target =
+    $("target")?.value.trim();
+
+  const type =
+    $("productType")?.value;
+
+  const price =
+    Number(
+      $("price")?.value || 0
+    );
+
+  const title =
+    $("title")?.value.trim();
+
   const description =
-    $("productDescription")?.value.trim();
+    $("description")
+      ?.value.trim();
+
+  if (!skill) {
+    alert("Keahlian wajib diisi.");
+    return;
+  }
 
   if (!title) {
     alert("Judul produk wajib diisi.");
-    return;
-  }
-
-  if (!type) {
-    alert("Pilih jenis produk.");
     return;
   }
 
@@ -255,16 +441,19 @@ async function saveProduct(publish) {
     return;
   }
 
-  const { data, error } = await supabaseClient
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("products")
     .insert({
       creator_id: user.id,
-      title,
-      skill,
-      target,
-      type,
-      price,
-      description,
+      title: title,
+      skill: skill,
+      target: target,
+      type: type,
+      price: price,
+      description: description,
       published: publish,
       sales: 0,
       reseller_count: 0
@@ -273,8 +462,14 @@ async function saveProduct(publish) {
     .single();
 
   if (error) {
-    alert("Gagal menyimpan produk: " + error.message);
+
+    alert(
+      "Gagal menyimpan produk: " +
+      error.message
+    );
+
     console.log(error);
+
     return;
   }
 
@@ -283,45 +478,57 @@ async function saveProduct(publish) {
   await loadMarketplace();
   await loadMyProducts();
 
-  showResult(data, publish);
+  showResult(
+    data,
+    publish
+  );
 }
 
-function showResult(product, published) {
-  openPage("resultPage");
 
-  const title = $("resultTitle");
-  const text = $("resultText");
+function showResult(
+  product,
+  published
+) {
 
-  if (title) {
-    title.textContent = published
-      ? "Produk berhasil dipublikasikan! 🚀"
-      : "Draft berhasil disimpan! 💾";
-  }
+  const content =
+    $("resultContent");
 
-  if (text) {
-    text.innerHTML = `
-      <strong>${escapeHTML(product.title)}</strong><br>
-      ${rupiah(product.price)}<br><br>
-      Status:
-      <strong>${published ? "Published" : "Draft"}</strong>
+  if (content) {
+
+    content.innerHTML = `
+      <div class="card">
+        <h3>
+          ${published
+            ? "🚀 Produk berhasil dipublikasikan!"
+            : "💾 Draft berhasil disimpan!"}
+        </h3>
+
+        <p>
+          <strong>
+            ${escapeHTML(product.title)}
+          </strong>
+        </p>
+
+        <p>
+          Harga:
+          <strong>
+            ${rupiah(product.price)}
+          </strong>
+        </p>
+
+        <p>
+          Status:
+          <strong>
+            ${published
+              ? "Published"
+              : "Draft"}
+          </strong>
+        </p>
+      </div>
     `;
   }
-}
 
-function clearCreateForm() {
-  [
-    "productTitle",
-    "productSkill",
-    "productTarget",
-    "productPrice",
-    "productDescription"
-  ].forEach((id) => {
-    if ($(id)) $(id).value = "";
-  });
-
-  if ($("productType")) {
-    $("productType").selectedIndex = 0;
-  }
+  openPage("result");
 }
 
 
@@ -330,7 +537,11 @@ function clearCreateForm() {
 // =====================================================
 
 async function loadMarketplace() {
-  const { data, error } = await supabaseClient
+
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("products")
     .select(`
       *,
@@ -339,46 +550,66 @@ async function loadMarketplace() {
       )
     `)
     .eq("published", true)
-    .order("created_at", {
-      ascending: false
-    });
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
   if (error) {
-    console.log("Marketplace:", error.message);
+
+    console.log(
+      "Marketplace:",
+      error.message
+    );
+
     return;
   }
 
-  renderMarketplace(data || []);
+  renderMarketplace(
+    data || []
+  );
 }
 
-function renderMarketplace(products) {
-  const grid = $("marketplaceGrid");
 
-  if (!grid) return;
+function renderMarketplace(
+  products
+) {
+
+  const list =
+    $("marketplaceList");
+
+  if (!list) return;
 
   if (!products.length) {
-    grid.innerHTML = `
-      <div class="empty">
-        Belum ada produk yang dipublikasikan.
+
+    list.innerHTML = `
+      <div class="loading">
+        Belum ada produk.
       </div>
     `;
+
     return;
   }
 
-  grid.innerHTML = products
-    .map((p) => `
-      <article
+  list.innerHTML =
+    products.map(p => `
+
+      <div
         class="product-card"
         onclick="openProduct('${p.id}')"
       >
+
         <div class="product-cover">
-          ${productType(p.type)}
+          ${productEmoji(p.type)}
         </div>
 
-        <div class="product-card-body">
-          <div class="product-type">
+        <div class="product-info">
+
+          <small>
             ${escapeHTML(p.type)}
-          </div>
+          </small>
 
           <h3>
             ${escapeHTML(p.title)}
@@ -386,46 +617,51 @@ function renderMarketplace(products) {
 
           <p>
             ${escapeHTML(
-              p.profiles?.display_name || "Creator"
+              p.profiles?.display_name ||
+              "Creator"
             )}
           </p>
 
-          <div class="product-bottom">
-            <strong>${rupiah(p.price)}</strong>
-            <span>
-              ${p.sales || 0} terjual
-            </span>
+          <div class="product-price">
+            ${rupiah(p.price)}
           </div>
+
+          <small>
+            ${p.sales || 0} terjual
+          </small>
+
         </div>
-      </article>
-    `)
-    .join("");
+
+      </div>
+
+    `).join("");
 }
+
 
 function searchProducts() {
-  const q =
-    $("marketSearch")?.value.toLowerCase().trim() || "";
+
+  const input =
+    $("searchInput");
+
+  const query =
+    input?.value
+      .toLowerCase()
+      .trim() || "";
 
   document
-    .querySelectorAll(".product-card")
-    .forEach((card) => {
+    .querySelectorAll(
+      ".product-card"
+    )
+    .forEach(card => {
+
       card.style.display =
-        card.textContent.toLowerCase().includes(q)
+        card.textContent
+          .toLowerCase()
+          .includes(query)
           ? ""
           : "none";
+
     });
-}
-
-function productType(type) {
-  const value = String(type || "").toLowerCase();
-
-  if (value.includes("ebook")) return "📘";
-  if (value.includes("panduan")) return "📚";
-  if (value.includes("checklist")) return "✅";
-  if (value.includes("template")) return "📄";
-  if (value.includes("worksheet")) return "📝";
-
-  return "💡";
 }
 
 
@@ -433,8 +669,14 @@ function productType(type) {
 // PRODUCT DETAIL
 // =====================================================
 
-async function openProduct(productId) {
-  const { data, error } = await supabaseClient
+async function openProduct(
+  productId
+) {
+
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("products")
     .select(`
       *,
@@ -446,56 +688,81 @@ async function openProduct(productId) {
     .single();
 
   if (error) {
-    alert("Produk tidak ditemukan.");
-    console.log(error);
+
+    alert(
+      "Produk tidak ditemukan."
+    );
+
     return;
   }
 
   currentProduct = data;
 
-  openPage("productPage");
+  const detail =
+    $("productDetailContent");
 
-  if ($("detailType")) {
-    $("detailType").textContent =
-      productType(data.type) + " " + data.type;
-  }
+  if (!detail) return;
 
-  if ($("detailTitle")) {
-    $("detailTitle").textContent = data.title;
-  }
+  detail.innerHTML = `
 
-  if ($("detailCreator")) {
-    $("detailCreator").textContent =
-      data.profiles?.display_name || "Creator";
-  }
+    <div class="product-detail">
 
-  if ($("detailPrice")) {
-    $("detailPrice").textContent =
-      rupiah(data.price);
-  }
+      <div class="product-cover large">
+        ${productEmoji(data.type)}
+      </div>
 
-  if ($("detailDescription")) {
-    $("detailDescription").textContent =
-      data.description ||
-      "Produk digital berkualitas dari creator 60DETIK.";
-  }
+      <small>
+        ${escapeHTML(data.type)}
+      </small>
 
-  if ($("detailSales")) {
-    $("detailSales").textContent =
-      `${data.sales || 0} terjual`;
-  }
+      <h1>
+        ${escapeHTML(data.title)}
+      </h1>
 
-  const buyButton = $("buyButton");
+      <p>
+        Creator:
+        <strong>
+          ${escapeHTML(
+            data.profiles?.display_name ||
+            "Creator"
+          )}
+        </strong>
+      </p>
 
-  if (buyButton) {
-    buyButton.onclick = simulateBuy;
-  }
+      <h2>
+        ${rupiah(data.price)}
+      </h2>
 
-  const resellerButton = $("resellerButton");
+      <p>
+        ${escapeHTML(
+          data.description ||
+          "Produk digital 60DETIK."
+        )}
+      </p>
 
-  if (resellerButton) {
-    resellerButton.onclick = joinReseller;
-  }
+      <p>
+        ${data.sales || 0} terjual
+      </p>
+
+      <button
+        class="primary-btn full"
+        onclick="simulateBuy()"
+      >
+        🛒 Beli Produk
+      </button>
+
+      <button
+        class="secondary-btn full"
+        onclick="joinReseller()"
+      >
+        💰 Jual Produk Ini
+      </button>
+
+    </div>
+
+  `;
+
+  openPage("productDetail");
 }
 
 
@@ -504,52 +771,105 @@ async function openProduct(productId) {
 // =====================================================
 
 async function simulateBuy() {
+
   if (!currentProduct) {
-    alert("Produk belum dipilih.");
+    alert(
+      "Produk belum dipilih."
+    );
     return;
   }
 
   const {
-    data: { session }
-  } = await supabaseClient.auth.getSession();
+    data: {
+      session
+    }
+  } = await supabaseClient.auth
+    .getSession();
 
-  const buyer = session?.user;
+  const buyer =
+    session?.user;
 
   if (!buyer) {
-    alert("Silakan masuk terlebih dahulu untuk membeli.");
+
+    alert(
+      "Silakan masuk terlebih dahulu."
+    );
+
     openAuth();
+
     return;
   }
 
-  if (buyer.id === currentProduct.creator_id) {
-    alert("Kamu tidak bisa membeli produk milik sendiri.");
+  if (
+    buyer.id ===
+    currentProduct.creator_id
+  ) {
+
+    alert(
+      "Kamu tidak bisa membeli produk milik sendiri."
+    );
+
     return;
   }
 
-  const amount = Number(currentProduct.price || 0);
+  const amount =
+    Number(
+      currentProduct.price || 0
+    );
 
-  const creatorAmount = Math.floor(amount * 0.70);
+  const creatorAmount =
+    Math.floor(
+      amount * 0.70
+    );
+
   const resellerAmount = 0;
-  const platformAmount = amount - creatorAmount;
 
-  const { data, error } = await supabaseClient
+  const platformAmount =
+    amount -
+    creatorAmount;
+
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("orders")
     .insert({
-      product_id: currentProduct.id,
-      buyer_id: buyer.id,
-      reseller_id: null,
-      amount: amount,
-      creator_amount: creatorAmount,
-      reseller_amount: resellerAmount,
-      platform_amount: platformAmount,
-      status: "pending"
+      product_id:
+        currentProduct.id,
+
+      buyer_id:
+        buyer.id,
+
+      reseller_id:
+        null,
+
+      amount:
+        amount,
+
+      creator_amount:
+        creatorAmount,
+
+      reseller_amount:
+        resellerAmount,
+
+      platform_amount:
+        platformAmount,
+
+      status:
+        "pending"
     })
     .select()
     .single();
 
   if (error) {
-    alert("Gagal membuat order: " + error.message);
+
+    alert(
+      "Gagal membuat order: " +
+      error.message
+    );
+
     console.log(error);
+
     return;
   }
 
@@ -558,12 +878,11 @@ async function simulateBuy() {
     "Nomor Order:\n" +
     data.id +
     "\n\n" +
-    "Total: " + rupiah(amount) +
-    "\n" +
+    "Total: " +
+    rupiah(amount) +
+    "\n\n" +
     "Status: MENUNGGU PEMBAYARAN"
   );
-
-  await loadMyOrders();
 }
 
 
@@ -572,28 +891,44 @@ async function simulateBuy() {
 // =====================================================
 
 async function joinReseller() {
+
   if (!currentProduct) {
-    alert("Produk belum dipilih.");
+    alert(
+      "Produk belum dipilih."
+    );
     return;
   }
 
   const {
-    data: { session }
-  } = await supabaseClient.auth.getSession();
+    data: {
+      session
+    }
+  } = await supabaseClient.auth
+    .getSession();
 
-  if (!session?.user) {
-    alert("Silakan masuk terlebih dahulu.");
+  const user =
+    session?.user;
+
+  if (!user) {
+
+    alert(
+      "Silakan masuk terlebih dahulu."
+    );
+
     openAuth();
+
     return;
   }
 
   if (
-    session.user.id ===
+    user.id ===
     currentProduct.creator_id
   ) {
+
     alert(
-      "Kamu adalah creator produk ini."
+      "Creator tidak perlu menjadi reseller produknya sendiri."
     );
+
     return;
   }
 
@@ -601,19 +936,28 @@ async function joinReseller() {
     window.location.origin +
     window.location.pathname +
     "?product=" +
-    encodeURIComponent(currentProduct.id) +
+    encodeURIComponent(
+      currentProduct.id
+    ) +
     "&ref=" +
-    encodeURIComponent(session.user.id);
+    encodeURIComponent(
+      user.id
+    );
 
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(shareUrl);
+  try {
+
+    await navigator.clipboard.writeText(
+      shareUrl
+    );
 
     alert(
-      "Link reseller berhasil dibuat! 🚀\n\n" +
+      "LINK RESELLER BERHASIL DIBUAT! 🚀\n\n" +
       "Link sudah disalin.\n\n" +
-      "Bagikan link tersebut kepada calon pembeli."
+      shareUrl
     );
-  } else {
+
+  } catch {
+
     alert(
       "Link reseller kamu:\n\n" +
       shareUrl
@@ -623,194 +967,138 @@ async function joinReseller() {
 
 
 // =====================================================
-// MY PRODUCTS
+// CREATOR STUDIO
 // =====================================================
 
 async function loadMyProducts() {
-  if (!currentUser) return;
 
-  const { data, error } = await supabaseClient
+  if (!currentUser)
+    return;
+
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("products")
     .select("*")
-    .eq("creator_id", currentUser.id)
-    .order("created_at", {
-      ascending: false
-    });
+    .eq(
+      "creator_id",
+      currentUser.id
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
   if (error) {
-    console.log("My products:", error.message);
+
+    console.log(
+      "My products:",
+      error.message
+    );
+
     return;
   }
 
-  renderMyProducts(data || []);
-  updateStats(data || []);
+  renderMyProducts(
+    data || []
+  );
+
+  updateStats(
+    data || []
+  );
 }
 
-function renderMyProducts(products) {
-  const el = $("myProducts");
 
-  if (!el) return;
+function renderMyProducts(
+  products
+) {
+
+  const box =
+    $("myProducts");
+
+  if (!box) return;
 
   if (!products.length) {
-    el.innerHTML = `
-      <div class="empty">
-        Kamu belum memiliki produk.
+
+    box.innerHTML = `
+      <div class="loading">
+        Belum ada produk.
       </div>
     `;
+
     return;
   }
 
-  el.innerHTML = products
-    .map((p) => `
-      <div class="my-product">
-        <div>
-          <strong>
-            ${escapeHTML(p.title)}
-          </strong>
+  box.innerHTML =
+    products.map(p => `
 
-          <small>
-            ${rupiah(p.price)}
-            · ${p.published ? "Published" : "Draft"}
-          </small>
+      <div
+        class="product-card"
+        onclick="openProduct('${p.id}')"
+      >
+
+        <div class="product-cover">
+          ${productEmoji(p.type)}
         </div>
 
-        <button
-          onclick="openProduct('${p.id}')"
-        >
-          Lihat
-        </button>
+        <div class="product-info">
+
+          <small>
+            ${p.published
+              ? "PUBLISHED"
+              : "DRAFT"}
+          </small>
+
+          <h3>
+            ${escapeHTML(p.title)}
+          </h3>
+
+          <div class="product-price">
+            ${rupiah(p.price)}
+          </div>
+
+        </div>
+
       </div>
-    `)
-    .join("");
+
+    `).join("");
 }
 
-function updateStats(products) {
-  const total = products.length;
+
+function updateStats(
+  products
+) {
+
+  const total =
+    products.length;
 
   const published =
-    products.filter((p) => p.published).length;
+    products.filter(
+      p => p.published
+    ).length;
 
   const sales =
     products.reduce(
-      (sum, p) => sum + Number(p.sales || 0),
+      (sum, p) =>
+        sum +
+        Number(p.sales || 0),
       0
     );
 
   if ($("statProducts"))
-    $("statProducts").textContent = total;
+    $("statProducts")
+      .textContent = total;
 
   if ($("statPublished"))
-    $("statPublished").textContent = published;
+    $("statPublished")
+      .textContent = published;
 
   if ($("statSales"))
-    $("statSales").textContent = sales;
-}
-
-
-// =====================================================
-// ORDERS
-// =====================================================
-
-async function loadMyOrders() {
-  if (!currentUser) return;
-
-  const { data, error } = await supabaseClient
-    .from("orders")
-    .select(`
-      *,
-      products (
-        title
-      )
-    `)
-    .eq("buyer_id", currentUser.id)
-    .order("created_at", {
-      ascending: false
-    });
-
-  if (error) {
-    console.log("Orders:", error.message);
-    return;
-  }
-
-  renderOrders(data || []);
-}
-
-function renderOrders(orders) {
-  const el = $("ordersList");
-
-  if (!el) return;
-
-  if (!orders.length) {
-    el.innerHTML = `
-      <div class="empty">
-        Belum ada pesanan.
-      </div>
-    `;
-    return;
-  }
-
-  el.innerHTML = orders
-    .map((order) => `
-      <div class="order-card">
-        <div>
-          <strong>
-            ${escapeHTML(
-              order.products?.title ||
-              "Produk"
-            )}
-          </strong>
-        </div>
-
-        <div>
-          ${rupiah(order.amount)}
-        </div>
-
-        <div class="order-status">
-          ${escapeHTML(order.status)}
-        </div>
-
-        <small>
-          ${new Date(
-            order.created_at
-          ).toLocaleString("id-ID")}
-        </small>
-      </div>
-    `)
-    .join("");
-}
-
-
-// =====================================================
-// PROFILE
-// =====================================================
-
-async function loadProfile() {
-  if (!currentUser) return;
-
-  const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .maybeSingle();
-
-  if (error) {
-    console.log("Profile:", error.message);
-    return;
-  }
-
-  const name =
-    data?.display_name ||
-    currentUser.email?.split("@")[0] ||
-    "Creator";
-
-  if ($("profileName")) {
-    $("profileName").textContent = name;
-  }
-
-  if ($("profileEmail")) {
-    $("profileEmail").textContent =
-      currentUser.email || "";
-  }
+    $("statSales")
+      .textContent = sales;
 }
 
 
@@ -818,79 +1106,27 @@ async function loadProfile() {
 // INITIALIZE
 // =====================================================
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
 
-  // Auth form
-  const authForm = $("authForm");
+    await checkUser();
 
-  if (authForm) {
-    authForm.addEventListener(
-      "submit",
-      submitAuth
-    );
+    await loadMarketplace();
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const productId =
+      params.get("product");
+
+    if (productId) {
+      await openProduct(
+        productId
+      );
+    }
+
   }
-
-  // Search
-  const search = $("marketSearch");
-
-  if (search) {
-    search.addEventListener(
-      "input",
-      searchProducts
-    );
-  }
-
-  // Buttons
-  const draftBtn = $("saveDraftBtn");
-
-  if (draftBtn) {
-    draftBtn.onclick = () =>
-      saveProduct(false);
-  }
-
-  const publishBtn = $("publishBtn");
-
-  if (publishBtn) {
-    publishBtn.onclick = () =>
-      saveProduct(true);
-  }
-
-  const newProductBtn =
-    $("newProductBtn");
-
-  if (newProductBtn) {
-    newProductBtn.onclick = () => {
-      clearCreateForm();
-      openPage("createPage");
-    };
-  }
-
-  const marketplaceBtn =
-    $("marketplaceBtn");
-
-  if (marketplaceBtn) {
-    marketplaceBtn.onclick = () => {
-      loadMarketplace();
-      openPage("marketplacePage");
-    };
-  }
-
-  await checkUser();
-
-  if (currentUser) {
-    await loadMyOrders();
-  }
-
-  // Buka produk dari URL jika ada
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
-
-  const productId =
-    params.get("product");
-
-  if (productId) {
-    await openProduct(productId);
-  }
-});
+);
