@@ -70,8 +70,10 @@ function openPage(pageId) {
   }
 
   updateUI();
-}
 
+if (pageId === "orders") {
+  loadOrders();
+}
 
 // =====================================================
 // AUTH
@@ -873,6 +875,8 @@ async function simulateBuy() {
     return;
   }
 
+    await loadOrders();
+
   alert(
     "ORDER BERHASIL DIBUAT! 🎉\n\n" +
     "Nomor Order:\n" +
@@ -885,6 +889,191 @@ async function simulateBuy() {
   );
 }
 
+// =====================================================
+// PESANAN SAYA
+// =====================================================
+
+async function loadOrders() {
+  const list = $("ordersList");
+  const loginBox = $("ordersLoginRequired");
+
+  if (!list) return;
+
+  if (!currentUser) {
+    if (loginBox) {
+      loginBox.classList.remove("hidden");
+    }
+
+    list.innerHTML = "";
+    return;
+  }
+
+  if (loginBox) {
+    loginBox.classList.add("hidden");
+  }
+
+  list.innerHTML = `
+    <div class="loading">
+      Memuat pesanan...
+    </div>
+  `;
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("orders")
+    .select(`
+      *,
+      products (
+        title,
+        type
+      )
+    `)
+    .eq("buyer_id", currentUser.id)
+    .order("created_at", {
+      ascending: false
+    });
+
+  if (error) {
+    console.log("Orders:", error.message);
+
+    list.innerHTML = `
+      <div class="notice">
+        Gagal memuat pesanan.
+      </div>
+    `;
+
+    return;
+  }
+
+  renderOrders(data || []);
+}
+
+
+function renderOrders(orders) {
+  const list = $("ordersList");
+
+  if (!list) return;
+
+  if (!orders.length) {
+    list.innerHTML = `
+      <div class="notice">
+        Belum ada pesanan.
+      </div>
+    `;
+
+    return;
+  }
+
+  list.innerHTML = orders.map(order => {
+
+    const productTitle =
+      order.products?.title ||
+      "Produk 60DETIK";
+
+    const productType =
+      order.products?.type ||
+      "Produk Digital";
+
+    const status = String(
+      order.status || "pending"
+    ).toLowerCase();
+
+    let statusText = "MENUNGGU PEMBAYARAN";
+    let statusIcon = "🟡";
+
+    if (
+      status === "paid" ||
+      status === "dibayar"
+    ) {
+      statusText = "DIBAYAR";
+      statusIcon = "🔵";
+    }
+
+    if (
+      status === "processing" ||
+      status === "diproses"
+    ) {
+      statusText = "DIPROSES";
+      statusIcon = "🔵";
+    }
+
+    if (
+      status === "completed" ||
+      status === "selesai"
+    ) {
+      statusText = "SELESAI";
+      statusIcon = "🟢";
+    }
+
+    if (
+      status === "cancelled" ||
+      status === "dibatalkan"
+    ) {
+      statusText = "DIBATALKAN";
+      statusIcon = "🔴";
+    }
+
+    const date = order.created_at
+      ? new Date(order.created_at)
+          .toLocaleString("id-ID")
+      : "-";
+
+    return `
+      <div class="card">
+
+        <div class="product-cover">
+          ${productEmoji(productType)}
+        </div>
+
+        <small>
+          ${escapeHTML(productType)}
+        </small>
+
+        <h3>
+          ${escapeHTML(productTitle)}
+        </h3>
+
+        <p>
+          Total:
+          <strong>
+            ${rupiah(order.amount)}
+          </strong>
+        </p>
+
+        <p>
+          ${statusIcon}
+          <strong>
+            ${statusText}
+          </strong>
+        </p>
+
+        <p>
+          <small>
+            ID Pesanan
+          </small>
+          <br>
+
+          <span style="
+            font-size:12px;
+            word-break:break-all;
+          ">
+            ${escapeHTML(order.id)}
+          </span>
+        </p>
+
+        <p>
+          <small>
+            ${date}
+          </small>
+        </p>
+
+      </div>
+    `;
+
+  }).join("");
+}
 
 // =====================================================
 // RESELLER
