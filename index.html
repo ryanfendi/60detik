@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta name="theme-color" content="#0b0b0f">
+    <meta name="theme-color" content="#08080c">
 
     <title>60DETIK — Ubah Keahlian Jadi Penghasilan</title>
 
@@ -22,7 +21,6 @@
     <button
         class="profileBtn"
         onclick="showPage('dashboard')"
-        aria-label="Creator Studio"
     >
         👤
     </button>
@@ -67,6 +65,13 @@
             💡 IDEKAN
         </button>
 
+        <button
+            class="marketButton"
+            onclick="showPage('marketplace')"
+        >
+            🛒 LIHAT MARKETPLACE
+        </button>
+
     </div>
 
 
@@ -74,34 +79,171 @@
 
         <div class="featureCard">
             <div class="featureIcon">⚡</div>
-
             <b>60 DETIK</b>
-
-            <p>
-                Mulai dari keahlianmu.
-            </p>
+            <p>Mulai dari keahlianmu.</p>
         </div>
-
 
         <div class="featureCard">
             <div class="featureIcon">💰</div>
-
             <b>JUAL</b>
-
-            <p>
-                Buat produk digital.
-            </p>
+            <p>Buat produk digital.</p>
         </div>
-
 
         <div class="featureCard">
             <div class="featureIcon">🚀</div>
-
             <b>RESELLER</b>
+            <p>Orang lain ikut menjual.</p>
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= MARKETPLACE ================= -->
+
+<section id="marketplace" class="page">
+
+    <div class="pageTitle">
+
+        <div class="miniBadge">
+            MARKETPLACE
+        </div>
+
+        <h2>
+            🛒 Marketplace
+        </h2>
+
+        <p>
+            Temukan produk digital dari para creator.
+        </p>
+
+    </div>
+
+
+    <div class="marketSearch">
+
+        <input
+            id="marketSearch"
+            type="search"
+            placeholder="🔎 Cari produk..."
+            oninput="searchMarketplace()"
+        >
+
+    </div>
+
+
+    <div
+        id="marketplaceList"
+        class="marketplaceList"
+    ></div>
+
+</section>
+
+
+
+<!-- ================= PRODUCT DETAIL ================= -->
+
+<section id="productDetail" class="page">
+
+    <button
+        class="backButton"
+        onclick="showPage('marketplace')"
+    >
+        ← Kembali ke Marketplace
+    </button>
+
+
+    <div class="detailCover">
+
+        <small>
+            60DETIK DIGITAL PRODUCT
+        </small>
+
+        <h1 id="detailTitle">
+            Produk
+        </h1>
+
+        <p id="detailTarget">
+            Untuk pemula
+        </p>
+
+    </div>
+
+
+    <div class="detailBody">
+
+        <div class="success">
+            ✓ PRODUK DIGITAL
+        </div>
+
+        <h2 id="detailTitle2">
+            Produk
+        </h2>
+
+        <p id="detailDescription">
+            Deskripsi produk.
+        </p>
+
+
+        <div class="included">
+
+            <div>✓ Materi utama</div>
+            <div>✓ Langkah praktis</div>
+            <div>✓ Bonus checklist</div>
+
+        </div>
+
+
+        <div class="price">
+
+            <small>
+                HARGA
+            </small>
+
+            <strong id="detailPrice">
+                Rp29.000
+            </strong>
+
+        </div>
+
+
+        <button
+            class="primary full"
+            onclick="simulateBuy()"
+        >
+            💳 BELI PRODUK
+        </button>
+
+
+        <div class="resellerBox">
+
+            <div class="resellerIcon">
+                🚀
+            </div>
+
+            <h3>
+                Jual Produk Ini
+            </h3>
 
             <p>
-                Biarkan orang lain ikut menjual.
+                Bagikan produk ini dan dapatkan
+                komisi dari penjualan yang kamu hasilkan.
             </p>
+
+            <div class="commission">
+                KOMISI SIMULASI
+                <strong>20%</strong>
+            </div>
+
+            <button
+                class="secondary full"
+                onclick="joinReseller()"
+            >
+                🚀 JUAL PRODUK INI
+            </button>
+
         </div>
 
     </div>
@@ -135,28 +277,17 @@
 
         <div class="stat">
             <span>Pendapatan</span>
-
-            <strong id="income">
-                Rp0
-            </strong>
+            <strong id="income">Rp0</strong>
         </div>
-
 
         <div class="stat">
             <span>Produk</span>
-
-            <strong id="productCount">
-                0
-            </strong>
+            <strong id="productCount">0</strong>
         </div>
-
 
         <div class="stat">
             <span>Terjual</span>
-
-            <strong id="salesCount">
-                0
-            </strong>
+            <strong id="salesCount">0</strong>
         </div>
 
     </div>
@@ -170,6 +301,14 @@
     </button>
 
 
+    <button
+        class="secondary full"
+        onclick="showPage('marketplace')"
+    >
+        🛒 BUKA MARKETPLACE
+    </button>
+
+
     <div class="sectionTitle">
         Produk Saya
     </div>
@@ -178,10 +317,7 @@
     <div id="productList">
 
         <div class="empty">
-
-            <div class="emptyIcon">
-                📦
-            </div>
+            <div class="emptyIcon">📦</div>
 
             <h3>
                 Belum ada produk
@@ -190,7 +326,6 @@
             <p>
                 Buat produk pertamamu sekarang.
             </p>
-
         </div>
 
     </div>
@@ -249,25 +384,11 @@
 
         <select id="productType">
 
-            <option value="Ebook">
-                Ebook
-            </option>
-
-            <option value="Panduan">
-                Panduan
-            </option>
-
-            <option value="Checklist">
-                Checklist
-            </option>
-
-            <option value="Template">
-                Template
-            </option>
-
-            <option value="Worksheet">
-                Worksheet
-            </option>
+            <option value="Ebook">Ebook</option>
+            <option value="Panduan">Panduan</option>
+            <option value="Checklist">Checklist</option>
+            <option value="Template">Template</option>
+            <option value="Worksheet">Worksheet</option>
 
         </select>
 
@@ -285,7 +406,6 @@
 
 
         <button
-            id="generateButton"
             class="primary full"
             onclick="generateProduct()"
         >
@@ -411,26 +531,16 @@
 
             <div class="included">
 
-                <div>
-                    ✓ Materi utama
-                </div>
-
-                <div>
-                    ✓ Langkah praktis
-                </div>
-
-                <div>
-                    ✓ Bonus checklist
-                </div>
+                <div>✓ Materi utama</div>
+                <div>✓ Langkah praktis</div>
+                <div>✓ Bonus checklist</div>
 
             </div>
 
 
             <div class="price">
 
-                <small>
-                    HARGA
-                </small>
+                <small>HARGA</small>
 
                 <strong id="resultPrice">
                     Rp29.000
@@ -481,8 +591,7 @@
         </h2>
 
         <p>
-            Produkmu sekarang memiliki halaman
-            penjualan.
+            Produkmu sekarang muncul di marketplace.
         </p>
 
 
@@ -498,7 +607,7 @@
             id="productLink"
             class="link"
         >
-            60detik.app/p/000001
+            -
         </div>
 
 
@@ -519,6 +628,14 @@
 
 
         <button
+            class="secondary full"
+            onclick="showPage('marketplace')"
+        >
+            🛒 LIHAT MARKETPLACE
+        </button>
+
+
+        <button
             class="textButton full"
             onclick="showPage('dashboard')"
         >
@@ -528,8 +645,6 @@
     </div>
 
 </section>
-
-</main>
 
 
 
@@ -566,11 +681,11 @@
 
 
     <button
-        id="navDashboard"
-        onclick="showPage('dashboard')"
+        id="navMarketplace"
+        onclick="showPage('marketplace')"
     >
-        <span>📦</span>
-        <small>Produk</small>
+        <span>🛒</span>
+        <small>Market</small>
     </button>
 
 </nav>
@@ -579,4 +694,4 @@
 <script src="app.js"></script>
 
 </body>
-</html>
+    </html>
