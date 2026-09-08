@@ -1,16 +1,12 @@
 /* =========================================
-   60DETIK V0.2
-   APPLICATION
-========================================= */
-
-
-/* =========================================
-   DATA
+   60DETIK V0.3
 ========================================= */
 
 let products = [];
 
 let currentProduct = null;
+
+let selectedProduct = null;
 
 
 /* =========================================
@@ -25,7 +21,11 @@ document.addEventListener(
 
         renderProducts();
 
+        renderMarketplace();
+
         updateStats();
+
+        loadProductFromUrl();
 
     }
 );
@@ -53,9 +53,7 @@ function showPage(pageId) {
 
 
     if (!selected) {
-
         return;
-
     }
 
 
@@ -63,6 +61,22 @@ function showPage(pageId) {
 
 
     updateNavigation(pageId);
+
+
+    if (pageId === "marketplace") {
+
+        renderMarketplace();
+
+    }
+
+
+    if (pageId === "dashboard") {
+
+        renderProducts();
+
+        updateStats();
+
+    }
 
 
     window.scrollTo({
@@ -74,67 +88,70 @@ function showPage(pageId) {
 
 
 /* =========================================
-   NAVIGATION ACTIVE
+   NAVIGATION
 ========================================= */
 
 function updateNavigation(pageId) {
 
-    const buttons = {
-
-        home: "navHome",
-
-        create: "navCreate",
-
-        idea: "navIdea",
-
-        dashboard: "navDashboard"
-
-    };
+    const ids = [
+        "navHome",
+        "navCreate",
+        "navIdea",
+        "navMarketplace"
+    ];
 
 
-    Object.values(buttons).forEach(
-        function (id) {
+    ids.forEach(function (id) {
 
-            const button =
-                document.getElementById(id);
+        const button =
+            document.getElementById(id);
 
-            if (button) {
+        if (button) {
 
-                button.classList.remove(
-                    "navActive"
-                );
-
-            }
+            button.classList.remove(
+                "navActive"
+            );
 
         }
-    );
+
+    });
 
 
-    let navPage = pageId;
+    let activeId;
 
 
-    if (
-        pageId === "result" ||
-        pageId === "published"
+    if (pageId === "home") {
+
+        activeId = "navHome";
+
+    } else if (pageId === "create") {
+
+        activeId = "navCreate";
+
+    } else if (pageId === "idea") {
+
+        activeId = "navIdea";
+
+    } else if (
+        pageId === "marketplace" ||
+        pageId === "productDetail"
     ) {
 
-        navPage = "dashboard";
+        activeId = "navMarketplace";
 
     }
 
 
-    const activeId =
-        buttons[navPage];
-
-
     if (activeId) {
 
-        const activeButton =
-            document.getElementById(activeId);
+        const button =
+            document.getElementById(
+                activeId
+            );
 
-        if (activeButton) {
+        if (button) {
 
-            activeButton.classList.add(
+            button.classList.add(
                 "navActive"
             );
 
@@ -201,10 +218,10 @@ function generateProduct() {
     }
 
 
-    if (!price || price < 0) {
+    if (price < 0 || isNaN(price)) {
 
         alert(
-            "Masukkan harga produk yang benar."
+            "Masukkan harga yang benar."
         );
 
         return;
@@ -248,19 +265,23 @@ function generateProduct() {
 
         published: false,
 
-        sales: 0
+        sales: 0,
+
+        resellerCount: 0
 
     };
 
 
     document.getElementById(
         "resultTitle"
-    ).textContent = title;
+    ).textContent =
+        title;
 
 
     document.getElementById(
         "resultTitle2"
-    ).textContent = title;
+    ).textContent =
+        title;
 
 
     document.getElementById(
@@ -287,7 +308,7 @@ function generateProduct() {
 
 
 /* =========================================
-   CREATE TITLE
+   TITLE
 ========================================= */
 
 function createTitle(
@@ -295,7 +316,7 @@ function createTitle(
     type
 ) {
 
-    const cleanSkill =
+    const clean =
         capitalize(skill);
 
 
@@ -303,25 +324,25 @@ function createTitle(
 
         Ebook:
             "Panduan " +
-            cleanSkill +
+            clean +
             " untuk Pemula",
 
         Panduan:
             "Panduan Praktis " +
-            cleanSkill,
+            clean,
 
         Checklist:
             "Checklist " +
-            cleanSkill +
+            clean +
             " Anti Bingung",
 
         Template:
             "Template Siap Pakai " +
-            cleanSkill,
+            clean,
 
         Worksheet:
             "Worksheet " +
-            cleanSkill +
+            clean +
             " untuk Pemula"
 
     };
@@ -329,7 +350,7 @@ function createTitle(
 
     return (
         titles[type] ||
-        "Panduan " + cleanSkill
+        "Panduan " + clean
     );
 
 }
@@ -351,8 +372,7 @@ function createDescription(
         skill +
         " yang dibuat untuk " +
         target +
-        ". " +
-        "Berisi langkah sederhana, " +
+        ". Berisi langkah sederhana, " +
         "tips penting, dan cara mulai " +
         "mempraktikkannya."
     );
@@ -390,7 +410,7 @@ function generateIdeas() {
     }
 
 
-    const cleanSkill =
+    const clean =
         capitalize(skill);
 
 
@@ -399,59 +419,50 @@ function generateIdeas() {
         {
             title:
                 "Panduan " +
-                cleanSkill +
+                clean +
                 " untuk Pemula",
 
             description:
-                "Panduan sederhana dari dasar " +
-                "hingga langkah pertama."
+                "Panduan sederhana dari dasar hingga langkah pertama."
         },
-
 
         {
             title:
                 "30 Kesalahan dalam " +
-                cleanSkill +
+                clean +
                 " yang Harus Dihindari",
 
             description:
-                "Kumpulan kesalahan umum " +
-                "beserta cara menghindarinya."
+                "Kumpulan kesalahan umum beserta cara menghindarinya."
         },
-
 
         {
             title:
                 "Checklist " +
-                cleanSkill +
+                clean +
                 " Siap Pakai",
 
             description:
-                "Checklist praktis agar pengguna " +
-                "bisa mengikuti proses dengan mudah."
+                "Checklist praktis agar pengguna bisa mengikuti proses dengan mudah."
         },
-
 
         {
             title:
                 "Template " +
-                cleanSkill +
+                clean +
                 " untuk Pemula",
 
             description:
-                "Template yang bisa langsung " +
-                "digunakan dan disesuaikan."
+                "Template yang bisa langsung digunakan dan disesuaikan."
         },
-
 
         {
             title:
                 "7 Hari Belajar " +
-                cleanSkill,
+                clean,
 
             description:
-                "Rencana belajar sederhana " +
-                "selama tujuh hari."
+                "Rencana belajar sederhana selama tujuh hari."
         }
 
     ];
@@ -499,7 +510,9 @@ function generateIdeas() {
             `;
 
 
-            results.appendChild(card);
+            results.appendChild(
+                card
+            );
 
         }
     );
@@ -538,7 +551,7 @@ function publishProduct() {
     if (!currentProduct) {
 
         alert(
-            "Tidak ada produk yang sedang dibuat."
+            "Tidak ada produk."
         );
 
         return;
@@ -549,7 +562,9 @@ function publishProduct() {
     currentProduct.published = true;
 
 
-    products.push(currentProduct);
+    products.push(
+        currentProduct
+    );
 
 
     saveProducts();
@@ -557,6 +572,7 @@ function publishProduct() {
 
     renderProducts();
 
+    renderMarketplace();
 
     updateStats();
 
@@ -588,7 +604,329 @@ function publishProduct() {
 
 
 /* =========================================
-   COPY LINK
+   MARKETPLACE
+========================================= */
+
+function renderMarketplace(
+    searchTerm = ""
+) {
+
+    const container =
+        document.getElementById(
+            "marketplaceList"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const query =
+        String(searchTerm)
+            .toLowerCase()
+            .trim();
+
+
+    let visibleProducts =
+        products.filter(
+            function (product) {
+
+                if (!product.published) {
+                    return false;
+                }
+
+
+                if (!query) {
+                    return true;
+                }
+
+
+                const text =
+                    (
+                        product.title +
+                        " " +
+                        product.description +
+                        " " +
+                        product.type +
+                        " " +
+                        product.target
+                    ).toLowerCase();
+
+
+                return text.includes(query);
+
+            }
+        );
+
+
+    if (
+        visibleProducts.length === 0
+    ) {
+
+        container.innerHTML = `
+
+            <div class="marketEmpty">
+
+                <div class="emptyIcon">
+                    🛒
+                </div>
+
+                <h3>
+                    Belum ada produk
+                </h3>
+
+                <p>
+                    Buat produk pertama untuk
+                    mengisi marketplace.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    visibleProducts
+        .slice()
+        .reverse()
+        .forEach(
+            function (product) {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "marketCard";
+
+
+                card.innerHTML = `
+
+                    <div class="marketCardTop">
+
+                        <div>
+
+                            <span class="marketType">
+                                ${escapeHtml(
+                                    product.type
+                                )}
+                            </span>
+
+                            <h3>
+                                ${escapeHtml(
+                                    product.title
+                                )}
+                            </h3>
+
+                        </div>
+
+                        <div class="marketPrice">
+                            ${formatRupiah(
+                                product.price
+                            )}
+                        </div>
+
+                    </div>
+
+                    <p>
+                        ${escapeHtml(
+                            product.description
+                        )}
+                    </p>
+
+                    <button
+                        class="primary full"
+                        onclick="openProduct(
+                            '${escapeAttribute(
+                                product.id
+                            )}'
+                        )"
+                    >
+                        LIHAT PRODUK
+                    </button>
+
+                `;
+
+
+                container.appendChild(
+                    card
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
+
+function searchMarketplace() {
+
+    const input =
+        document.getElementById(
+            "marketSearch"
+        );
+
+
+    renderMarketplace(
+        input ? input.value : ""
+    );
+
+}
+
+
+/* =========================================
+   OPEN PRODUCT
+========================================= */
+
+function openProduct(id) {
+
+    const product =
+        products.find(
+            function (item) {
+
+                return (
+                    item.id === id
+                );
+
+            }
+        );
+
+
+    if (!product) {
+
+        alert(
+            "Produk tidak ditemukan."
+        );
+
+        return;
+
+    }
+
+
+    selectedProduct =
+        product;
+
+
+    document.getElementById(
+        "detailTitle"
+    ).textContent =
+        product.title;
+
+
+    document.getElementById(
+        "detailTitle2"
+    ).textContent =
+        product.title;
+
+
+    document.getElementById(
+        "detailTarget"
+    ).textContent =
+        "Untuk " +
+        product.target;
+
+
+    document.getElementById(
+        "detailDescription"
+    ).textContent =
+        product.description;
+
+
+    document.getElementById(
+        "detailPrice"
+    ).textContent =
+        formatRupiah(
+            product.price
+        );
+
+
+    showPage(
+        "productDetail"
+    );
+
+}
+
+
+/* =========================================
+   SIMULATE BUY
+========================================= */
+
+function simulateBuy() {
+
+    if (!selectedProduct) {
+
+        alert(
+            "Produk belum dipilih."
+        );
+
+        return;
+
+    }
+
+
+    alert(
+        "DEMO 60DETIK\n\n" +
+        "Pembelian belum aktif.\n\n" +
+        "Pada versi berikutnya kita akan " +
+        "menghubungkan pembayaran dan " +
+        "pengiriman produk otomatis."
+    );
+
+}
+
+
+/* =========================================
+   RESELLER
+========================================= */
+
+function joinReseller() {
+
+    if (!selectedProduct) {
+
+        alert(
+            "Produk belum dipilih."
+        );
+
+        return;
+
+    }
+
+
+    selectedProduct.resellerCount =
+        Number(
+            selectedProduct.resellerCount || 0
+        ) + 1;
+
+
+    saveProducts();
+
+
+    alert(
+        "🚀 MODE RESELLER DEMO\n\n" +
+        "Kamu sekarang menjadi reseller " +
+        "produk ini.\n\n" +
+        "Komisi simulasi: 20%\n\n" +
+        "Sistem komisi sungguhan akan " +
+        "ditambahkan pada versi berikutnya."
+    );
+
+}
+
+
+/* =========================================
+   COPY
 ========================================= */
 
 function copyProductLink() {
@@ -640,7 +978,8 @@ function fallbackCopy(text) {
         );
 
 
-    textarea.value = text;
+    textarea.value =
+        text;
 
 
     document.body.appendChild(
@@ -695,11 +1034,9 @@ function shareProduct() {
         ).textContent;
 
 
-    const shareText =
+    const text =
         "Lihat produk digital saya di 60DETIK: " +
-        name +
-        "\n" +
-        link;
+        name;
 
 
     if (
@@ -710,7 +1047,7 @@ function shareProduct() {
 
             title: name,
 
-            text: shareText,
+            text: text,
 
             url: link
 
@@ -742,10 +1079,7 @@ function saveProducts() {
 
     } catch (error) {
 
-        console.error(
-            "Gagal menyimpan produk:",
-            error
-        );
+        console.error(error);
 
     }
 
@@ -773,18 +1107,13 @@ function loadProducts() {
 
         products = [];
 
-        console.error(
-            "Gagal membaca produk:",
-            error
-        );
-
     }
 
 }
 
 
 /* =========================================
-   RENDER PRODUCTS
+   PRODUCT LIST
 ========================================= */
 
 function renderProducts() {
@@ -796,16 +1125,11 @@ function renderProducts() {
 
 
     if (!container) {
-
         return;
-
     }
 
 
-    if (
-        !products ||
-        products.length === 0
-    ) {
+    if (products.length === 0) {
 
         container.innerHTML = `
 
@@ -863,9 +1187,7 @@ function renderProducts() {
                                 )}
                             </h3>
 
-                            <span
-                                class="productType"
-                            >
+                            <span class="productType">
                                 ${escapeHtml(
                                     product.type
                                 )}
@@ -873,16 +1195,13 @@ function renderProducts() {
 
                         </div>
 
-                        <div
-                            class="productPrice"
-                        >
+                        <div class="productPrice">
                             ${formatRupiah(
                                 product.price
                             )}
                         </div>
 
                     </div>
-
 
                     <div class="productStatus">
 
@@ -948,13 +1267,11 @@ function updateStats() {
 
                 return (
                     total +
-                    (
-                        Number(
-                            product.price || 0
-                        ) *
-                        Number(
-                            product.sales || 0
-                        )
+                    Number(
+                        product.price || 0
+                    ) *
+                    Number(
+                        product.sales || 0
                     )
                 );
 
@@ -1000,7 +1317,9 @@ function updateStats() {
     if (incomeElement) {
 
         incomeElement.textContent =
-            formatRupiah(income);
+            formatRupiah(
+                income
+            );
 
     }
 
@@ -1027,9 +1346,7 @@ function formatRupiah(number) {
 function capitalize(text) {
 
     if (!text) {
-
         return "";
-
     }
 
 
@@ -1043,26 +1360,15 @@ function capitalize(text) {
 
 function createProductId() {
 
-    const time =
+    return (
         Date.now()
             .toString()
-            .slice(-6);
-
-
-    const random =
+            .slice(-8) +
         Math.floor(
             Math.random() * 100
         )
             .toString()
-            .padStart(
-                2,
-                "0"
-            );
-
-
-    return (
-        time +
-        random
+            .padStart(2, "0")
     );
 
 }
@@ -1070,37 +1376,15 @@ function createProductId() {
 
 function createProductLink(id) {
 
-    /*
-       Untuk prototype GitHub,
-       link dibuat berdasarkan URL
-       repository saat ini.
-
-       Nanti pada versi server,
-       ini akan diganti menjadi:
-       https://60detik.app/p/xxxxx
-    */
-
-    const base =
-        window.location.origin +
-        window.location.pathname
-            .replace(
-                /\/[^\/]*$/,
-                "/"
-            );
-
-
     return (
-        base +
+        window.location.origin +
+        window.location.pathname +
         "?product=" +
-        id
+        encodeURIComponent(id)
     );
 
 }
 
-
-/* =========================================
-   SECURITY HELPERS
-========================================= */
 
 function escapeHtml(text) {
 
@@ -1129,17 +1413,13 @@ function escapeAttribute(text) {
         .replace(
             /'/g,
             "\\'"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
         );
 
 }
 
 
 /* =========================================
-   DEMO PRODUCT URL
+   URL PRODUCT
 ========================================= */
 
 function loadProductFromUrl() {
@@ -1150,16 +1430,14 @@ function loadProductFromUrl() {
         );
 
 
-    const productId =
+    const id =
         params.get(
             "product"
         );
 
 
-    if (!productId) {
-
+    if (!id) {
         return;
-
     }
 
 
@@ -1168,7 +1446,7 @@ function loadProductFromUrl() {
             function (item) {
 
                 return (
-                    item.id === productId
+                    item.id === id
                 );
 
             }
@@ -1176,66 +1454,10 @@ function loadProductFromUrl() {
 
 
     if (!product) {
-
         return;
-
     }
 
 
-    document.getElementById(
-        "resultTitle"
-    ).textContent =
-        product.title;
+    openProduct(id);
 
-
-    document.getElementById(
-        "resultTitle2"
-    ).textContent =
-        product.title;
-
-
-    document.getElementById(
-        "resultTarget"
-    ).textContent =
-        "Untuk " +
-        product.target;
-
-
-    document.getElementById(
-        "resultDescription"
-    ).textContent =
-        product.description;
-
-
-    document.getElementById(
-        "resultPrice"
-    ).textContent =
-        formatRupiah(
-            product.price
-        );
-
-
-    showPage("result");
-
-}
-
-
-/* =========================================
-   INITIAL URL LOAD
-========================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        setTimeout(
-            function () {
-
-                loadProductFromUrl();
-
-            },
-            100
-        );
-
-    }
-);
+       }
