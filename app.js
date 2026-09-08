@@ -521,7 +521,6 @@ async function simulateBuy() {
     return;
   }
 
-  // Tidak boleh membeli produk sendiri
   if (buyer.id === currentProduct.creator_id) {
     alert("Kamu tidak bisa membeli produk milik sendiri.");
     return;
@@ -529,13 +528,9 @@ async function simulateBuy() {
 
   const amount = Number(currentProduct.price || 0);
 
-  const creatorAmount =
-    Math.floor(amount * 0.70);
-
+  const creatorAmount = Math.floor(amount * 0.70);
   const resellerAmount = 0;
-
-  const platformAmount =
-    amount - creatorAmount;
+  const platformAmount = amount - creatorAmount;
 
   const { data, error } = await supabaseClient
     .from("orders")
@@ -559,10 +554,13 @@ async function simulateBuy() {
   }
 
   alert(
-    "Order berhasil dibuat! 🎉\n\n" +
+    "ORDER BERHASIL DIBUAT! 🎉\n\n" +
     "Nomor Order:\n" +
     data.id +
-    "\n\nStatus: MENUNGGU PEMBAYARAN"
+    "\n\n" +
+    "Total: " + rupiah(amount) +
+    "\n" +
+    "Status: MENUNGGU PEMBAYARAN"
   );
 
   await loadMyOrders();
